@@ -122,8 +122,11 @@
 /* === Public function implementation ========================================================= */
 
 int main(void) {
+    int state = 0;
     int divisor  = 0;
     bool current_state, last_state = false;
+    digital_output_t led_red = DigitalOutputCreate(LED_1_GPIO, LED_1_BIT);
+    digital_output_t led_yellow = DigitalOutputCreate(LED_2_GPIO, LED_2_BIT);
     digital_output_t led_green = DigitalOutputCreate(LED_3_GPIO, LED_3_BIT);
     
     Chip_SCU_PinMuxSet(LED_R_PORT, LED_R_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_R_FUNC);
@@ -185,12 +188,27 @@ int main(void) {
         }
 
         divisor++;
-        if (divisor == 5) {
-            divisor = 0;
+        if (divisor == 5 && state == 0) {
+            state = 1;
+            DigitalOutputToggle(led_red);
+        }else if (divisor == 10 && state == 1) {
+            state = 2;
+            DigitalOutputToggle(led_yellow);
+            DigitalOutputToggle(led_red);
+        }else if (divisor == 15 && state == 2) {
+            state = 3;
+            DigitalOutputToggle(led_green);
+            DigitalOutputToggle(led_yellow);
+        }else if (divisor == 20 && state == 3) {
+            state = 1;
+            divisor = 5;
+            DigitalOutputToggle(led_red);
             DigitalOutputToggle(led_green);
         }
+        
+        
 
-        for (int index = 0; index < 100; index++) {
+        for (int index = 0; index < 50; index++) {
             for (int delay = 0; delay < 25000; delay++) {
                 __asm("NOP");
             }
