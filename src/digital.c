@@ -61,20 +61,25 @@ digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit) {
     if (self != NULL) {
         self->gpio = gpio;
         self->bit = bit;
+        Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, false);
+        Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, self->gpio, self->bit, true);
     }
     return self;
 }
 
 void DigitalOutputActivate(digital_output_t self) {
+    Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, true);
 }
 
 void DigitalOutputDeactivate(digital_output_t self) {
+    Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, false);
 }
 
 void DigitalOutputToggle(digital_output_t self) {
     Chip_GPIO_SetPinToggle(LPC_GPIO_PORT, self->gpio, self->bit);
 }
 
+/* ----------------------------------------------------------------------------------------------------------------- */
 
 digital_input_t DigitalInputCreate(uint8_t gpio, uint8_t bit, bool inverted) {
     digital_input_t self = malloc(sizeof(struct digital_input_s));
@@ -83,12 +88,17 @@ digital_input_t DigitalInputCreate(uint8_t gpio, uint8_t bit, bool inverted) {
         self->bit = bit;
         self->inverted = inverted;
         self->lastState = DigitalInputGetIsActive(self);
+
+        Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, self->gpio, self->bit, false);
+
+        self->lastState = DigitalInputGetIsActive(self);
     }
     return self;
 }
 
+
 bool DigitalInputGetIsActive(digital_input_t self) {
-    bool state = true; // Llamar a la función del fabricante y comparar con 1
+    bool state = Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, self->gpio, self->bit) != 0;
 
     if (self->inverted) {
         state = !state;
@@ -98,6 +108,7 @@ bool DigitalInputGetIsActive(digital_input_t self) {
 
 digital_state_t DigitalWasChanged(digital_input_t self) {
     digital_state_t result = DIGITAL_INPUT_NOT_CHANGED;
+
     bool state = DigitalInputGetIsActive(self);
 
     if (state && !self->lastState) {
@@ -113,6 +124,8 @@ bool DigitalWasActivated(digital_input_t self) {
     return DIGITAL_INPUT_WAS_ACTIVATED == DigitalWasChanged(self);
 }
 
-bool DigitalWasDeactivated(digital_input_t input);
+bool DigitalWasDeactivated(digital_input_t self){
+    return DIGITAL_INPUT_WAS_DEACTIVATED == DigitalWasChanged(self);
+}
 
 /* === End of documentation ======================================================================================== */

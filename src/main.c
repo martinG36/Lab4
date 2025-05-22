@@ -122,91 +122,83 @@
 /* === Public function implementation ========================================================= */
 
 int main(void) {
-    int state = 0;
+    int state_RGB = 0;
     int divisor  = 0;
-    bool current_state, last_state = false;
-    digital_output_t led_red = DigitalOutputCreate(LED_1_GPIO, LED_1_BIT);
-    digital_output_t led_yellow = DigitalOutputCreate(LED_2_GPIO, LED_2_BIT);
-    digital_output_t led_green = DigitalOutputCreate(LED_3_GPIO, LED_3_BIT);
+    int divisor_RGB = 0;
+//    bool current_state, last_state = false;
     
     Chip_SCU_PinMuxSet(LED_R_PORT, LED_R_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_R_FUNC);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_R_GPIO, LED_R_BIT, false);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, LED_R_GPIO, LED_R_BIT, true);
+    digital_output_t led_R = DigitalOutputCreate(LED_R_GPIO, LED_R_BIT);
 
     Chip_SCU_PinMuxSet(LED_G_PORT, LED_G_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_G_FUNC);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_G_GPIO, LED_G_BIT, false);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, LED_G_GPIO, LED_G_BIT, true);
+    digital_output_t led_G = DigitalOutputCreate(LED_G_GPIO, LED_G_BIT);
 
     Chip_SCU_PinMuxSet(LED_B_PORT, LED_B_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_B_FUNC);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_B_GPIO, LED_B_BIT, false);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, LED_B_GPIO, LED_B_BIT, true);
+    digital_output_t led_B = DigitalOutputCreate(LED_B_GPIO, LED_B_BIT);
 
     /******************/
     Chip_SCU_PinMuxSet(LED_1_PORT, LED_1_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_1_FUNC);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_1_GPIO, LED_1_BIT, false);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, LED_1_GPIO, LED_1_BIT, true);
+    digital_output_t led_red = DigitalOutputCreate(LED_1_GPIO, LED_1_BIT);
 
     Chip_SCU_PinMuxSet(LED_2_PORT, LED_2_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_2_FUNC);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_2_GPIO, LED_2_BIT, false);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, LED_2_GPIO, LED_2_BIT, true);
+    digital_output_t led_yellow = DigitalOutputCreate(LED_2_GPIO, LED_2_BIT);
 
     Chip_SCU_PinMuxSet(LED_3_PORT, LED_3_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_3_FUNC);
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, false);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, true);
+    digital_output_t led_green = DigitalOutputCreate(LED_3_GPIO, LED_3_BIT);
 
     /******************/
     Chip_SCU_PinMuxSet(TEC_1_PORT, TEC_1_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | TEC_1_FUNC);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, TEC_1_GPIO, TEC_1_BIT, false);
+    digital_input_t key_push = DigitalInputCreate(TEC_1_GPIO, TEC_1_BIT, true);
 
     Chip_SCU_PinMuxSet(TEC_2_PORT, TEC_2_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | TEC_2_FUNC);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, TEC_2_GPIO, TEC_2_BIT, false);
+    digital_input_t key_toggle = DigitalInputCreate(TEC_2_GPIO, TEC_2_BIT, true);
 
     Chip_SCU_PinMuxSet(TEC_3_PORT, TEC_3_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | TEC_3_FUNC);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, TEC_3_GPIO, TEC_3_BIT, false);
+    digital_input_t key_turn_on = DigitalInputCreate(TEC_3_GPIO, TEC_3_BIT, true);
 
     Chip_SCU_PinMuxSet(TEC_4_PORT, TEC_4_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | TEC_4_FUNC);
-    Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, TEC_4_GPIO, TEC_4_BIT, false);
+    digital_input_t key_turn_off = DigitalInputCreate(TEC_4_GPIO, TEC_4_BIT, true);
 
     while (true) {
-        if (Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, TEC_1_GPIO, TEC_1_BIT) == 0) {
-            Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_B_GPIO, LED_B_BIT, true);
-        } else {
-            Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_B_GPIO, LED_B_BIT, false);
+        divisor_RGB++;
+        if (DigitalInputGetIsActive(key_push) && divisor_RGB == 5 && state_RGB == 0) {
+            state_RGB = 1;
+            DigitalOutputDeactivate(led_B);
+            DigitalOutputActivate(led_R);
+        }else if (DigitalInputGetIsActive(key_push) && divisor_RGB == 10 && state_RGB == 1) {
+            state_RGB = 2;
+            DigitalOutputDeactivate(led_R);
+            DigitalOutputActivate(led_G);
+        }else if (DigitalInputGetIsActive(key_push) && divisor_RGB == 15 && state_RGB == 2) {
+            state_RGB = 0;
+            divisor_RGB = 0;
+            DigitalOutputDeactivate(led_G);
+            DigitalOutputActivate(led_B);
+        }else if (!DigitalInputGetIsActive(key_push)) {
+            DigitalOutputDeactivate(led_R);
+            DigitalOutputDeactivate(led_G);
+            DigitalOutputDeactivate(led_B);
+            state_RGB = 0;
+            divisor_RGB = 0;
         }
 
-        current_state = (Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, TEC_2_GPIO, TEC_2_BIT) == 0);
-        if ((current_state) && (!last_state)) {
-            Chip_GPIO_SetPinToggle(LPC_GPIO_PORT, LED_1_GPIO, LED_1_BIT);
+        if (DigitalInputGetIsActive(key_toggle)) {
+            DigitalOutputToggle(led_red);
         }
-        last_state = current_state;
 
-        if (Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, TEC_3_GPIO, TEC_3_BIT) == 0) {
-            Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_2_GPIO, LED_2_BIT, true);
+        if (DigitalInputGetIsActive(key_turn_on)) {
+            DigitalOutputActivate(led_yellow);
         }
-        if (Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, TEC_4_GPIO, TEC_4_BIT) == 0) {
-            Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_2_GPIO, LED_2_BIT, false);
+
+        if (DigitalInputGetIsActive(key_turn_off)) {
+            DigitalOutputDeactivate(led_yellow);
         }
 
         divisor++;
-        if (divisor == 5 && state == 0) {
-            state = 1;
-            DigitalOutputToggle(led_red);
-        }else if (divisor == 10 && state == 1) {
-            state = 2;
-            DigitalOutputToggle(led_yellow);
-            DigitalOutputToggle(led_red);
-        }else if (divisor == 15 && state == 2) {
-            state = 3;
-            DigitalOutputToggle(led_green);
-            DigitalOutputToggle(led_yellow);
-        }else if (divisor == 20 && state == 3) {
-            state = 1;
-            divisor = 5;
-            DigitalOutputToggle(led_red);
+        if (divisor == 5) {
+            divisor = 0;
             DigitalOutputToggle(led_green);
         }
-        
-        
 
         for (int index = 0; index < 50; index++) {
             for (int delay = 0; delay < 25000; delay++) {
