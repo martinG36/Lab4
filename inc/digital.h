@@ -27,6 +27,7 @@ SPDX-License-Identifier: MIT
 /* === Headers files inclusions ==================================================================================== */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /* === Header for C++ compatibility ================================================================================ */
 
@@ -38,8 +39,16 @@ extern "C" {
 
 /* === Public data type declarations =============================================================================== */
 
+typedef enum digital_state_e {
+    DIGITAL_INPUT_WAS_DEACTIVATED = -1,
+    DIGITAL_INPUT_NOT_CHANGED = 0,
+    DIGITAL_INPUT_WAS_ACTIVATED = 1
+} digital_state_t;
+
 //! Estructura que representa una salida digital
 typedef struct digital_output_s * digital_output_t;
+
+typedef struct digital_input_s * digital_input_t;
 
 /* === Public variable declarations ================================================================================ */
 
@@ -48,11 +57,11 @@ typedef struct digital_output_s * digital_output_t;
 /**
  * @brief Crea una salida digital
  * 
- * @param port El puerto del pin
- * @param pin El número del pin
+ * @param gpio El puerto del pin
+ * @param bit El número del pin
  * @return digital_output_t 
  */
-digital_output_t DigitalOutputCreate(uint8_t port, uint8_t pin);
+digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit);
 
 /**
  * @brief Crea una salida digital con un valor inicial
@@ -72,6 +81,24 @@ void DigitalOutputDeactivate(digital_output_t self);
  * @param self La salida digital
  */
 void DigitalOutputToggle(digital_output_t self);
+
+/**
+ * @brief Fución que crea una entrada digital
+ * 
+ * @param gpio El puerto del pin
+ * @param bit El número del pin
+ * @param inverted Indica si la entrada digital está invertida
+ * @return ditial_input_t 
+ */
+digital_input_t DigitalInputCreate(uint8_t gpio, uint8_t bit, bool inverted);
+
+bool DigitalInputGetIsActive(digital_input_t input);
+
+digital_state_t DigitalWasChanged(digital_input_t input);
+
+bool DigitalWasActivated(digital_input_t input);
+
+bool DigitalWasDeactivated(digital_input_t input);
 
 /* === End of conditional blocks =================================================================================== */
 
