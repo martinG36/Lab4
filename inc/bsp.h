@@ -52,7 +52,9 @@ typedef struct board_s {
     digital_input_t key_toggle;
     digital_input_t key_turn_on;
     digital_input_t key_turn_off;
-} const * board_t;
+} const * const board_t; /* Primer const: para que el contenido apuntado no se pueda modificar, no se podría hacer
+'board->led_R = algo';
+Segundo const: para que no se pueda modificar el puntero, no se podría hacer 'board = otro_board' */
 
 /* === Public variable declarations ================================================================================ */
 

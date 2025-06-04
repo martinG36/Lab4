@@ -62,7 +62,7 @@
 
 int main(void) {
     int state_RGB = 0;
-    int divisor  = 0;
+    int divisor = 0;
     int divisor_RGB = 0;
     board_t board = BoardCreate();
 
@@ -72,16 +72,16 @@ int main(void) {
             state_RGB = 1;
             DigitalOutputDeactivate(board->led_B);
             DigitalOutputActivate(board->led_R);
-        }else if (DigitalInputGetIsActive(board->key_push) && divisor_RGB == 10 && state_RGB == 1) {
+        } else if (DigitalInputGetIsActive(board->key_push) && divisor_RGB == 10 && state_RGB == 1) {
             state_RGB = 2;
             DigitalOutputDeactivate(board->led_R);
             DigitalOutputActivate(board->led_G);
-        }else if (DigitalInputGetIsActive(board->key_push) && divisor_RGB == 15 && state_RGB == 2) {
+        } else if (DigitalInputGetIsActive(board->key_push) && divisor_RGB == 15 && state_RGB == 2) {
             state_RGB = 0;
             divisor_RGB = 0;
             DigitalOutputDeactivate(board->led_G);
             DigitalOutputActivate(board->led_B);
-        }else if (!DigitalInputGetIsActive(board->key_push)) {
+        } else if (!DigitalInputGetIsActive(board->key_push)) {
             DigitalOutputDeactivate(board->led_R);
             DigitalOutputDeactivate(board->led_G);
             DigitalOutputDeactivate(board->led_B);

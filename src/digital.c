@@ -36,15 +36,15 @@ SPDX-License-Identifier: MIT
 
 //! Estructura que representa una salida digital
 struct digital_output_s {
-    uint8_t gpio; /*!< Puerto al que pertenece la salida */ 
+    uint8_t gpio; /*!< Puerto al que pertenece la salida */
     uint8_t bit;  /*!< Pin al que pertenece la salida */
 };
 
 //! Estructura que representa una entrada digital
 struct digital_input_s {
-    uint8_t gpio; /*!< Puerto al que pertenece la entrada */ 
-    uint8_t bit;  /*!< Pin al que pertenece la entrada */
-    bool inverted; /*!< Indica si la entrada está invertida */
+    uint8_t gpio;   /*!< Puerto al que pertenece la entrada */
+    uint8_t bit;    /*!< Pin al que pertenece la entrada */
+    bool inverted;  /*!< Indica si la entrada está invertida */
     bool lastState; /*!< Último estado conocido de la entrada */
 };
 
@@ -96,13 +96,12 @@ digital_input_t DigitalInputCreate(uint8_t gpio, uint8_t bit, bool inverted) {
     return self;
 }
 
-
 bool DigitalInputGetIsActive(digital_input_t self) {
     bool state = Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, self->gpio, self->bit) != 0;
 
     if (self->inverted) {
         state = !state;
-    }           
+    }
     return state;
 }
 
@@ -124,7 +123,7 @@ bool DigitalWasActivated(digital_input_t self) {
     return DIGITAL_INPUT_WAS_ACTIVATED == DigitalWasChanged(self);
 }
 
-bool DigitalWasDeactivated(digital_input_t self){
+bool DigitalWasDeactivated(digital_input_t self) {
     return DIGITAL_INPUT_WAS_DEACTIVATED == DigitalWasChanged(self);
 }
 

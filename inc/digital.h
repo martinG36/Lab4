@@ -56,20 +56,20 @@ typedef struct digital_input_s * digital_input_t;
 
 /**
  * @brief Crea una salida digital
- * 
+ *
  * @param gpio El puerto del pin
  * @param bit El número del pin
- * @return digital_output_t 
+ * @return digital_output_t
  */
 digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit);
 
 /**
  * @brief Crea una salida digital con un valor inicial
- * 
+ *
  * @param port El puerto del pin
  * @param pin El número del pin
  * @param initial_value El valor inicial de la salida digital
- * @return digital_output_t 
+ * @return digital_output_t
  */
 void DigitalOutputActivate(digital_output_t self);
 
@@ -77,18 +77,18 @@ void DigitalOutputDeactivate(digital_output_t self);
 
 /**
  * @brief Cambia el estado de la salida digital
- * 
+ *
  * @param self La salida digital
  */
 void DigitalOutputToggle(digital_output_t self);
 
 /**
  * @brief Fución que crea una entrada digital
- * 
+ *
  * @param gpio El puerto del pin
  * @param bit El número del pin
  * @param inverted Indica si la entrada digital está invertida
- * @return ditial_input_t 
+ * @return ditial_input_t
  */
 digital_input_t DigitalInputCreate(uint8_t gpio, uint8_t bit, bool inverted);
 
