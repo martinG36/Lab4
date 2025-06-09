@@ -41,7 +41,6 @@
 /* === Headers files inclusions =============================================================== */
 
 #include "bsp.h"
-#include <stdint.h>
 #include <stdbool.h>
 
 /* === Macros definitions ====================================================================== */
@@ -61,54 +60,19 @@
 /* === Public function implementation ========================================================= */
 
 int main(void) {
-    int state_RGB = 0;
     int divisor = 0;
-    int divisor_RGB = 0;
+    uint8_t value[4] = {1, 2, 3, 4};
+
     board_t board = BoardCreate();
 
+    ScreenWriteBCD(board->screen, value, 4);
+
     while (true) {
-        divisor_RGB++;
-        if (DigitalInputGetIsActive(board->key_push) && divisor_RGB == 5 && state_RGB == 0) {
-            state_RGB = 1;
-            DigitalOutputDeactivate(board->led_B);
-            DigitalOutputActivate(board->led_R);
-        } else if (DigitalInputGetIsActive(board->key_push) && divisor_RGB == 10 && state_RGB == 1) {
-            state_RGB = 2;
-            DigitalOutputDeactivate(board->led_R);
-            DigitalOutputActivate(board->led_G);
-        } else if (DigitalInputGetIsActive(board->key_push) && divisor_RGB == 15 && state_RGB == 2) {
-            state_RGB = 0;
-            divisor_RGB = 0;
-            DigitalOutputDeactivate(board->led_G);
-            DigitalOutputActivate(board->led_B);
-        } else if (!DigitalInputGetIsActive(board->key_push)) {
-            DigitalOutputDeactivate(board->led_R);
-            DigitalOutputDeactivate(board->led_G);
-            DigitalOutputDeactivate(board->led_B);
-            state_RGB = 0;
-            divisor_RGB = 0;
-        }
-
-        if (DigitalInputGetIsActive(board->key_toggle)) {
-            DigitalOutputToggle(board->led_red);
-        } else {
-            DigitalOutputDeactivate(board->led_red);
-        }
-
-        if (DigitalInputGetIsActive(board->key_turn_on)) {
-            DigitalOutputActivate(board->led_yellow);
-        }
-
-        if (DigitalInputGetIsActive(board->key_turn_off)) {
-            DigitalOutputDeactivate(board->led_yellow);
-        }
-
         divisor++;
         if (divisor == 5) {
             divisor = 0;
-            DigitalOutputToggle(board->led_green);
         }
-
+        ScreenRefresh(board->screen);
         for (int index = 0; index < 50; index++) {
             for (int delay = 0; delay < 25000; delay++) {
                 __asm("NOP");
