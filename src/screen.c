@@ -35,7 +35,11 @@ SPDX-License-Identifier: MIT
 
 struct screen_s {
     uint8_t digits;                   // Número de dígitos en la pantalla
-    uint8_t currente_digit;           // Dígito actual a mostrar
+    uint8_t current_digit;            // Dígito actual a mostrar
+    uint8_t flashing_from;            // Dígito desde el cual comenzar a parpadear
+    uint8_t flashing_to;              // Dígito hasta el cual parpadear
+    uint8_t flashing_count;           // Contador para el parpadeo
+    uint16_t flashing_frequency;      // Factor de división para el parpadeo
     screen_driver_t driver;           // Estructura con funciones de control de pantalla
     uint8_t value[SCREEN_MAX_DIGITS]; // Valores a mostrar
 };
@@ -72,7 +76,9 @@ screen_t ScreenCreate(uint8_t digits, screen_driver_t driver) {
     if (self != NULL) {
         self->digits = digits;    // Inicializar número de dígitos
         self->driver = driver;    // Asignar controlador de pantalla
-        self->currente_digit = 0; // Inicializar dígito actual
+        self->current_digit = 0;  // Inicializar dígito actual
+        self->flashing_count = 0; // Inicializar contador de parpadeo
+        self->flashing_frequency = 0;
     }
     return self;
 }
@@ -89,10 +95,40 @@ void ScreenWriteBCD(screen_t self, uint8_t value[], uint8_t size) {
 }
 
 void ScreenRefresh(screen_t self) {
-    self->driver->DigitsTurnOff();                                    // Apagar todos los dígitos
-    self->currente_digit = (self->currente_digit + 1) % self->digits; // Avanzar al siguiente dígito
-    self->driver->SegmentsUpdate(self->value[self->currente_digit]);  // Actualizar segmentos del dígito actual
-    self->driver->DigitTurnOn(self->currente_digit);                  // Encender el dígito actual
+    uint8_t segments;
+
+    self->driver->DigitsTurnOff();                                  // Apagar todos los dígitos
+    self->current_digit = (self->current_digit + 1) % self->digits; // Avanzar al siguiente dígito
+
+    segments = self->value[self->current_digit];
+    if (self->flashing_frequency != 0) {
+        if (self->current_digit == 0) {
+            self->flashing_count = (self->flashing_count + 1) % (self->flashing_frequency);
+        }
+        if (self->flashing_count < (self->flashing_frequency / 2)) {
+            if ((self->current_digit >= self->flashing_from) && (self->current_digit <= self->flashing_to)) {
+                segments = 0; // Apagar segmentos
+            }
+        }
+    }
+
+    self->driver->SegmentsUpdate(segments);         // Actualizar segmentos del dígito actual
+    self->driver->DigitTurnOn(self->current_digit); // Encender el dígito actual
 }
 
+int DisplayFlashDigits(screen_t self, uint8_t from, uint8_t to, uint16_t divisor) {
+    int result = 0;
+    if ((from > to) || (from >= SCREEN_MAX_DIGITS) || (to >= SCREEN_MAX_DIGITS)) {
+        result = -1;
+    } else if (!self) {
+        result = -1;
+    } else {
+        self->flashing_from = from;
+        self->flashing_to = to;
+        self->flashing_frequency = 2 * divisor;
+        self->flashing_count = 0; // Reiniciar contador de parpadeo
+    }
+
+    return result;
+}
 /* === End of documentation ======================================================================================== */

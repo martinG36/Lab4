@@ -2,6 +2,7 @@
     "editor.formatOnSave": true,
     "files.associations": {
         "limits": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "functional": "c"
     }
 }

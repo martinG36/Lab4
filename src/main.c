@@ -66,6 +66,7 @@ int main(void) {
     board_t board = BoardCreate();
 
     ScreenWriteBCD(board->screen, value, 4);
+    DisplayFlashDigits(board->screen, 1, 3, 100);
 
     while (true) {
         divisor++;
@@ -73,10 +74,8 @@ int main(void) {
             divisor = 0;
         }
         ScreenRefresh(board->screen);
-        for (int index = 0; index < 50; index++) {
-            for (int delay = 0; delay < 25000; delay++) {
-                __asm("NOP");
-            }
+        for (int delay = 0; delay < 25000; delay++) {
+            __asm("NOP");
         }
     }
 }

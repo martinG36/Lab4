@@ -74,6 +74,17 @@ void ScreenWriteBCD(screen_t screen, uint8_t value[], uint8_t size);
 
 void ScreenRefresh(screen_t screen);
 
+/**
+ * @brief Función para hacer parpadear algunos dígitos de la pantalla.
+ * @param display Puntero al descriptor de la pantalla con la que se quiere operar.
+ * @param from  Posición del primer dígito que se quiere hacer parpadear.
+ * @param to Posición del último dígito que se quiere hacer parpadear.
+ * @param frecuency Factor de división de la frecuencia de refresco para el parpadeo.
+ * @return void
+ * @note Esta función hace parpadear los dígitos de la pantalla en el rango especificado
+ */
+int DisplayFlashDigits(screen_t display, uint8_t from, uint8_t to, uint16_t divisor);
+
 /* === End of conditional blocks =================================================================================== */
 
 #ifdef __cplusplus
