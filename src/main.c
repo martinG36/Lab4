@@ -70,6 +70,43 @@ int main(void) {
 
     while (true) {
         divisor++;
+
+        // if (DigitalInputGetIsActive(board->set_time)) {
+        //     DigitalOutputActivate(board->led_R);
+        // } else {
+        //     DigitalOutputDeactivate(board->led_R);
+        // }
+
+        // if (DigitalInputGetIsActive(board->set_alarm)) {
+        //     DigitalOutputActivate(board->led_G);
+        // } else {
+        //     DigitalOutputDeactivate(board->led_G);
+        // }
+
+        // if (DigitalInputGetIsActive(board->decrement)) {
+        //     DigitalOutputActivate(board->led_B);
+        // } else {
+        //     DigitalOutputDeactivate(board->led_B);
+        // }
+
+        // if (DigitalInputGetIsActive(board->increment)) {
+        //     DigitalOutputActivate(board->led_red);
+        // } else {
+        //     DigitalOutputDeactivate(board->led_red);
+        // }
+
+        // if (DigitalInputGetIsActive(board->accept)) {
+        //     DigitalOutputActivate(board->led_yellow);
+        // } else {
+        //     DigitalOutputDeactivate(board->led_yellow);
+        // }
+
+        // if (DigitalInputGetIsActive(board->cancel)) {
+        //     DigitalOutputActivate(board->led_green);
+        // } else {
+        //     DigitalOutputDeactivate(board->led_green);
+        // }
+
         if (divisor == 5) {
             divisor = 0;
         }

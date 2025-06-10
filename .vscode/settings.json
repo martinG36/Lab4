@@ -3,6 +3,7 @@
     "files.associations": {
         "limits": "c",
         "stddef.h": "c",
-        "functional": "c"
+        "functional": "c",
+        "digital.h": "c"
     }
 }
