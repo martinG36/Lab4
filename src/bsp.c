@@ -24,6 +24,7 @@ SPDX-License-Identifier: MIT
 /* === Headers files inclusions ==================================================================================== */
 
 #include "bsp.h"
+#include "CIAA.h"
 #include "chip.h"
 #include "poncho.h"
 #include <stddef.h>
@@ -122,6 +123,35 @@ board_t BoardCreate(void) {
         DigitalInit();  // Inicializar pines de dígitos
         SegmentsInit(); // Inicializar pines de segmentos
         board->screen = ScreenCreate(4, &screen_driver);
+
+        // Inicializar LEDs
+        Chip_SCU_PinMuxSet(LED_R_PORT, LED_R_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_R_FUNC);
+        board->led_R = DigitalOutputCreate(SHIELD_RGB_RED_GPIO, SHIELD_RGB_RED_BIT, false);
+
+        Chip_SCU_PinMuxSet(LED_G_PORT, LED_G_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_G_FUNC);
+        board->led_G = DigitalOutputCreate(SHIELD_RGB_GREEN_GPIO, SHIELD_RGB_GREEN_BIT, false);
+
+        Chip_SCU_PinMuxSet(LED_B_PORT, LED_B_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_INACT | LED_B_FUNC);
+        board->led_B = DigitalOutputCreate(SHIELD_RGB_BLUE_GPIO, SHIELD_RGB_BLUE_BIT, false);
+
+        // Inicializar entradas digitales
+        Chip_SCU_PinMuxSet(KEY_F1_PORT, KEY_F1_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | KEY_F1_FUNC);
+        board->set_time = DigitalInputCreate(KEY_F1_GPIO, KEY_F1_BIT, false);
+
+        Chip_SCU_PinMuxSet(KEY_F2_PORT, KEY_F2_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | KEY_F2_FUNC);
+        board->set_alarm = DigitalInputCreate(KEY_F2_GPIO, KEY_F2_BIT, false);
+
+        Chip_SCU_PinMuxSet(KEY_F3_PORT, KEY_F3_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | KEY_F3_FUNC);
+        board->decrement = DigitalInputCreate(KEY_F3_GPIO, KEY_F3_BIT, false);
+
+        Chip_SCU_PinMuxSet(KEY_F4_PORT, KEY_F4_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | KEY_F4_FUNC);
+        board->increment = DigitalInputCreate(KEY_F4_GPIO, KEY_F4_BIT, false);
+
+        Chip_SCU_PinMuxSet(KEY_ACCEPT_PORT, KEY_ACCEPT_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | KEY_ACCEPT_FUNC);
+        board->accept = DigitalInputCreate(KEY_ACCEPT_GPIO, KEY_ACCEPT_BIT, false);
+
+        Chip_SCU_PinMuxSet(KEY_CANCEL_PORT, KEY_CANCEL_PIN, SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | KEY_CANCEL_FUNC);
+        board->cancel = DigitalInputCreate(KEY_CANCEL_GPIO, KEY_CANCEL_BIT, false);
     }
     return board;
 }

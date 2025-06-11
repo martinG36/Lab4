@@ -61,55 +61,62 @@
 
 int main(void) {
     int divisor = 0;
+    int cont_R = 0;
+    int cont_G = 0;
+    int cont_B = 0;
     uint8_t value[4] = {1, 2, 3, 4};
 
     board_t board = BoardCreate();
 
     ScreenWriteBCD(board->screen, value, 4);
-    DisplayFlashDigits(board->screen, 1, 3, 100);
+    DisplayFlashDigits(board->screen, 1, 2, 50);
+    DisplayFlashDots(board->screen, 0, 0, 100);
 
     while (true) {
         divisor++;
 
-        // if (DigitalInputGetIsActive(board->set_time)) {
-        //     DigitalOutputActivate(board->led_R);
-        // } else {
-        //     DigitalOutputDeactivate(board->led_R);
-        // }
+        cont_R++;
+        cont_G++;
+        cont_B++;
 
-        // if (DigitalInputGetIsActive(board->set_alarm)) {
-        //     DigitalOutputActivate(board->led_G);
-        // } else {
-        //     DigitalOutputDeactivate(board->led_G);
-        // }
+        if (DigitalInputGetIsActive(board->set_alarm) != 0) {
+            DigitalOutputActivate(board->led_R);
+        }
 
-        // if (DigitalInputGetIsActive(board->decrement)) {
-        //     DigitalOutputActivate(board->led_B);
-        // } else {
-        //     DigitalOutputDeactivate(board->led_B);
-        // }
+        if ((DigitalInputGetIsActive(board->set_time) != 0) || (cont_R == 500)) {
+            DigitalOutputDeactivate(board->led_R);
+        }
 
-        // if (DigitalInputGetIsActive(board->increment)) {
-        //     DigitalOutputActivate(board->led_red);
-        // } else {
-        //     DigitalOutputDeactivate(board->led_red);
-        // }
+        if (DigitalInputGetIsActive(board->increment) != 0) {
+            DigitalOutputActivate(board->led_G);
+        }
 
-        // if (DigitalInputGetIsActive(board->accept)) {
-        //     DigitalOutputActivate(board->led_yellow);
-        // } else {
-        //     DigitalOutputDeactivate(board->led_yellow);
-        // }
+        if ((DigitalInputGetIsActive(board->decrement) != 0) || (cont_G == 800)) {
+            DigitalOutputDeactivate(board->led_G);
+        }
 
-        // if (DigitalInputGetIsActive(board->cancel)) {
-        //     DigitalOutputActivate(board->led_green);
-        // } else {
-        //     DigitalOutputDeactivate(board->led_green);
-        // }
+        if (DigitalInputGetIsActive(board->cancel) != 0) {
+            DigitalOutputActivate(board->led_B);
+        }
+
+        if ((DigitalInputGetIsActive(board->accept) != 0) || (cont_B == 1200)) {
+            DigitalOutputDeactivate(board->led_B);
+        }
 
         if (divisor == 5) {
             divisor = 0;
         }
+
+        if (cont_R == 500) {
+            cont_R = 0;
+        }
+        if (cont_G == 800) {
+            cont_G = 0;
+        }
+        if (cont_B == 1200) {
+            cont_B = 0;
+        }
+
         ScreenRefresh(board->screen);
         for (int delay = 0; delay < 25000; delay++) {
             __asm("NOP");

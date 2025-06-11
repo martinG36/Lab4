@@ -68,10 +68,29 @@ typedef struct screen_driver_s {
 
 /* === Public function declarations ================================================================================ */
 
+/**
+ * @brief Función para crear una nueva instancia de pantalla.
+ * @param digits Número de dígitos que tendrá la pantalla.
+ * @param driver Estructura con funciones de control de pantalla.
+ * @return Puntero a la nueva instancia de pantalla.
+ * @note Si el número de dígitos es mayor que SCREEN_MAX_DIGITS, se limitará al máximo permitido.
+ */
 screen_t ScreenCreate(uint8_t digits, screen_driver_t driver);
 
+/**
+ * @brief Función para escribir un valor BCD en la pantalla.
+ * @param screen Puntero al descriptor de la pantalla con la que se quiere operar.
+ * @param value Array de valores BCD a escribir en la pantalla.
+ * @param size Tamaño del array de valores BCD.
+ * @return void
+ */
 void ScreenWriteBCD(screen_t screen, uint8_t value[], uint8_t size);
 
+/**
+ * @brief Función para refrescar la pantalla.
+ * @param screen Puntero al descriptor de la pantalla con la que se quiere operar.
+ * @return void
+ */
 void ScreenRefresh(screen_t screen);
 
 /**
@@ -84,6 +103,18 @@ void ScreenRefresh(screen_t screen);
  * @note Esta función hace parpadear los dígitos de la pantalla en el rango especificado
  */
 int DisplayFlashDigits(screen_t display, uint8_t from, uint8_t to, uint16_t divisor);
+
+/**
+ * @brief Función para hacer parpadear los puntos decimales de la pantalla.
+ * @param display Puntero al descriptor de la pantalla con la que se quiere operar.
+ * @param dot Posición del punto decimal que se quiere hacer parpadear.
+ * @param divisor Factor de división de la frecuencia de refresco para el parpadeo.
+ * @return void
+ * @note Esta función hace parpadear el punto decimal en la posición especificada
+ */
+int DisplayFlashDots(screen_t self, uint8_t from, uint8_t to, uint16_t divisor);
+
+void DisplayWriteDots(screen_t self, uint8_t dot, bool turn);
 
 /* === End of conditional blocks =================================================================================== */
 

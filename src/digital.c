@@ -36,8 +36,9 @@ SPDX-License-Identifier: MIT
 
 //! Estructura que representa una salida digital
 struct digital_output_s {
-    uint8_t gpio; /*!< Puerto al que pertenece la salida */
-    uint8_t bit;  /*!< Pin al que pertenece la salida */
+    uint8_t gpio;  /*!< Puerto al que pertenece la salida */
+    uint8_t bit;   /*!< Pin al que pertenece la salida */
+    bool inverted; /*!< Indica si una salida se activa en bajo o alto*/
 };
 
 //! Estructura que representa una entrada digital
@@ -56,7 +57,7 @@ struct digital_input_s {
 
 /* === Private function definitions ================================================================================ */
 
-digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit) {
+digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit, bool inverted) {
     digital_output_t self = malloc(sizeof(struct digital_output_s));
     if (self != NULL) {
         self->gpio = gpio;
@@ -68,11 +69,19 @@ digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit) {
 }
 
 void DigitalOutputActivate(digital_output_t self) {
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, true);
+    if (self->inverted == 0) {
+        Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, false);
+    } else {
+        Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, true);
+    }
 }
 
 void DigitalOutputDeactivate(digital_output_t self) {
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, false);
+    if (self->inverted == 0) {
+        Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, true);
+    } else {
+        Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, false);
+    }
 }
 
 void DigitalOutputToggle(digital_output_t self) {
@@ -97,7 +106,7 @@ digital_input_t DigitalInputCreate(uint8_t gpio, uint8_t bit, bool inverted) {
 }
 
 bool DigitalInputGetIsActive(digital_input_t self) {
-    bool state = Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, self->gpio, self->bit) != 0;
+    bool state = Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, self->gpio, self->bit);
 
     if (self->inverted) {
         state = !state;

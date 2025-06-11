@@ -61,7 +61,7 @@ typedef struct digital_input_s * digital_input_t;
  * @param bit El número del pin
  * @return digital_output_t
  */
-digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit);
+digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit, bool state);
 
 /**
  * @brief Crea una salida digital con un valor inicial

@@ -34,15 +34,20 @@ SPDX-License-Identifier: MIT
 /* === Private data type declarations ============================================================================== */
 
 struct screen_s {
-    uint8_t digits;                    // Número de dígitos en la pantalla
-    uint8_t current_digit;             // Dígito actual a mostrar
-    uint8_t flashing_from;             // Dígito desde el cual comenzar a parpadear
-    uint8_t flashing_to;               // Dígito hasta el cual parpadear
-    uint8_t flashing_count;            // Contador para el parpadeo
-    uint16_t flashing_frequency;       // Factor de división para el parpadeo
-    screen_driver_t driver;            // Estructura con funciones de control de pantalla
-    uint8_t value[SCREEN_MAX_DIGITS];  // Valores a mostrar
-    uint8_t points[SCREEN_MAX_DIGITS]; // Puntos decimales para cada dígito
+    uint8_t digits;                      // Número de dígitos en la pantalla
+    uint8_t current_digit;               // Dígito actual a mostrar
+    uint8_t flashing_from;               // Dígito desde el cual comenzar a parpadear
+    uint8_t flashing_to;                 // Dígito hasta el cual parpadear
+    uint8_t flashing_count_display;      // Contador para el parpadeo de los displays
+    uint16_t flashing_frequency_display; // Factor de división para el parpadeo de los displays
+
+    screen_driver_t driver;           // Estructura con funciones de control de pantalla
+    uint8_t value[SCREEN_MAX_DIGITS]; // Valores a mostrar
+
+    uint16_t flashing_frequency_dot; // Factor de división para el parpadeo de los puntos decimales
+    uint8_t flashing_count_dot;      // Contador para el parpadeo de los puntos decimales
+    uint8_t flashing_from_dot;       // Punto decimal desde el cual comenzar a parpadear
+    uint8_t flashing_to_dot;         // Punto decimal hasta el cual parpadear
 };
 
 /* === Private function declarations =============================================================================== */
@@ -75,13 +80,12 @@ screen_t ScreenCreate(uint8_t digits, screen_driver_t driver) {
         digits = SCREEN_MAX_DIGITS; // Limitar a máximo de dígitos
     }
     if (self != NULL) {
-        self->digits = digits;    // Inicializar número de dígitos
-        self->driver = driver;    // Asignar controlador de pantalla
-        self->current_digit = 0;  // Inicializar dígito actual
-        self->flashing_count = 0; // Inicializar contador de parpadeo
-        self->flashing_frequency = 0;
-        memset(self->value, 0, sizeof(self->value));   // Limpiar valores previos
-        memset(self->points, 0, sizeof(self->points)); // Limpiar puntos decimales
+        self->digits = digits;            // Inicializar número de dígitos
+        self->driver = driver;            // Asignar controlador de pantalla
+        self->current_digit = 0;          // Inicializar dígito actual
+        self->flashing_count_display = 0; // Inicializar contador de parpadeo
+        self->flashing_frequency_display = 0;
+        memset(self->value, 0, sizeof(self->value)); // Limpiar valores previos
     }
     return self;
 }
@@ -104,14 +108,28 @@ void ScreenRefresh(screen_t self) {
     self->current_digit = (self->current_digit + 1) % self->digits; // Avanzar al siguiente dígito
 
     segments = self->value[self->current_digit];
-    if (self->flashing_frequency != 0) {
+    if (self->flashing_frequency_display != 0) {
         if (self->current_digit == 0) {
-            self->flashing_count = (self->flashing_count + 1) % (self->flashing_frequency);
+            self->flashing_count_display = (self->flashing_count_display + 1) % (self->flashing_frequency_display);
         }
-        if (self->flashing_count < (self->flashing_frequency / 2)) {
+        if (self->flashing_count_display < (self->flashing_frequency_display / 2)) {
             if (self->current_digit >= self->flashing_from) {
                 if (self->current_digit <= self->flashing_to) {
                     segments = 0; // Apagar segmentos
+                }
+            }
+        }
+    }
+
+    segments |= SEGMENT_P;
+    if (self->flashing_frequency_dot != 0) {
+        if (self->current_digit == 0) {
+            self->flashing_count_dot = (self->flashing_count_dot + 1) % (self->flashing_frequency_dot);
+        }
+        if (self->flashing_count_dot < (self->flashing_frequency_dot / 2)) {
+            if (self->current_digit >= self->flashing_from_dot) {
+                if (self->current_digit <= self->flashing_to_dot) {
+                    segments &= ~SEGMENT_P; // Apagar puntos
                 }
             }
         }
@@ -130,10 +148,27 @@ int DisplayFlashDigits(screen_t self, uint8_t from, uint8_t to, uint16_t divisor
     } else {
         self->flashing_from = from;
         self->flashing_to = to;
-        self->flashing_frequency = 2 * divisor;
-        self->flashing_count = 0; // Reiniciar contador de parpadeo
+        self->flashing_frequency_display = 2 * divisor;
+        self->flashing_count_display = 0; // Reiniciar contador de parpadeo
     }
 
     return result;
 }
+
+int DisplayFlashDots(screen_t self, uint8_t from, uint8_t to, uint16_t divisor) {
+    int result = 0;
+    if ((from > to) || (from >= SCREEN_MAX_DIGITS) || (to >= SCREEN_MAX_DIGITS)) {
+        result = -1;
+    } else if (!self) {
+        result = -1;
+    } else {
+        self->flashing_from_dot = from;
+        self->flashing_to_dot = to;
+        self->flashing_frequency_dot = 2 * divisor;
+        self->flashing_count_dot = 0; // Reiniciar contador de parpadeo del punto decimal
+    }
+
+    return result;
+}
+
 /* === End of documentation ======================================================================================== */
