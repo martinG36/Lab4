@@ -48,6 +48,7 @@ typedef enum digital_state_e {
 //! Estructura que representa una salida digital
 typedef struct digital_output_s * digital_output_t;
 
+//! Estructura que representa una entrada digital
 typedef struct digital_input_s * digital_input_t;
 
 /* === Public variable declarations ================================================================================ */
@@ -64,15 +65,17 @@ typedef struct digital_input_s * digital_input_t;
 digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit, bool state);
 
 /**
- * @brief Crea una salida digital con un valor inicial
- *
- * @param port El puerto del pin
- * @param pin El número del pin
- * @param initial_value El valor inicial de la salida digital
- * @return digital_output_t
+ * @brief Activa una salida digital
+ * @param self La salida digital
+ * @return void
  */
 void DigitalOutputActivate(digital_output_t self);
 
+/**
+ * @brief Desactiva una salida digital
+ * @param self La salida digital
+ * @return void
+ */
 void DigitalOutputDeactivate(digital_output_t self);
 
 /**
@@ -92,12 +95,36 @@ void DigitalOutputToggle(digital_output_t self);
  */
 digital_input_t DigitalInputCreate(uint8_t gpio, uint8_t bit, bool inverted);
 
+/**
+ * @brief Obtiene el estado de una entrada digital
+ *
+ * @param input La entrada digital
+ * @return bool true si la entrada está activa, false si no lo está
+ */
 bool DigitalInputGetIsActive(digital_input_t input);
 
+/**
+ * @brief Verifica si el estado de la entrada digital ha cambiado
+ *
+ * @param input La entrada digital
+ * @return digital_state_t Indica si la entrada fue activada, desactivada o no cambió
+ */
 digital_state_t DigitalWasChanged(digital_input_t input);
 
+/**
+ * @brief Verifica si la entrada digital fue activada
+ *
+ * @param input La entrada digital
+ * @return bool true si la entrada fue activada, false en caso contrario
+ */
 bool DigitalWasActivated(digital_input_t input);
 
+/**
+ * @brief Verifica si la entrada digital fue desactivada
+ *
+ * @param input La entrada digital
+ * @return bool true si la entrada fue desactivada, false en caso contrario
+ */
 bool DigitalWasDeactivated(digital_input_t input);
 
 /* === End of conditional blocks =================================================================================== */

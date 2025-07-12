@@ -102,7 +102,7 @@
   :source:
     - src/**
   :include:
-    - src/** # In simple projects, this entry often duplicates :source
+    - inc/** # In simple projects, this entry often duplicates :source
   :support:
     - test/support
   :libraries: []

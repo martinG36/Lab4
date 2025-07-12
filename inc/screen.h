@@ -105,16 +105,13 @@ void ScreenRefresh(screen_t screen);
 int DisplayFlashDigits(screen_t display, uint8_t from, uint8_t to, uint16_t divisor);
 
 /**
- * @brief Función para hacer parpadear los puntos decimales de la pantalla.
- * @param display Puntero al descriptor de la pantalla con la que se quiere operar.
- * @param dot Posición del punto decimal que se quiere hacer parpadear.
- * @param divisor Factor de división de la frecuencia de refresco para el parpadeo.
+ * @brief Función para hacer parpadear el punto decimal de un dígito específico.
+ * @param self Puntero al descriptor de la pantalla con la que se quiere operar.
+ * @param digit Posición del dígito cuyo punto decimal se quiere hacer parpadear.
+ * @param divisor Factor de división de la frecuencia de refresco para el parpadeo del punto decimal.
  * @return void
- * @note Esta función hace parpadear el punto decimal en la posición especificada
  */
-int DisplayFlashDots(screen_t self, uint8_t from, uint8_t to, uint16_t divisor);
-
-void DisplayWriteDots(screen_t self, uint8_t dot, bool turn);
+int DisplayFlashDot(screen_t self, uint8_t digit, uint16_t divisor);
 
 /* === End of conditional blocks =================================================================================== */
 
