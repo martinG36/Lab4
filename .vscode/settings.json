@@ -4,6 +4,7 @@
         "limits": "c",
         "stddef.h": "c",
         "functional": "c",
-        "digital.h": "c"
+        "digital.h": "c",
+        "stdint.h": "c"
     }
 }

@@ -41,8 +41,7 @@ SPDX-License-Identifier: MIT
  * @brief Estructura que representa el reloj.
  * Esta estructura contiene la hora actual y un indicador de validez.
  */
-struct clock_s
-{
+struct clock_s {
     uint16_t ticks_per_second; /**< Número de ticks por segundo del reloj */
     clock_time_t current_time; /**< Hora actual del reloj */
     bool valid;                /**< Indicador de validez del reloj */
@@ -62,8 +61,7 @@ struct clock_s
  * Inicializa el reloj con una hora inválida (00:00) y un indicador de validez en falso.
  * @return Un puntero al reloj creado.
  */
-clock_t ClockCreate(uint16_t ticks_per_second)
-{
+clock_t ClockCreate(uint16_t ticks_per_second) {
     (void)ticks_per_second;
     static struct clock_s self[1];
     memset(self, 0, sizeof(struct clock_s));
@@ -78,8 +76,7 @@ clock_t ClockCreate(uint16_t ticks_per_second)
  * @param result Puntero donde se almacenará la hora actual.
  * @return Verdadero si se obtuvo la hora correctamente, falso si el reloj no es válido.
  */
-bool ClockGetTime(clock_t self, clock_time_t *result)
-{
+bool ClockGetTime(clock_t self, clock_time_t * result) {
     memcpy(result, &self->current_time, sizeof(clock_time_t));
     return self->valid;
 }
@@ -91,18 +88,12 @@ bool ClockGetTime(clock_t self, clock_time_t *result)
  * @param new_time Puntero a la nueva hora que se desea establecer.
  * @return Verdadero si se estableció la hora correctamente, falso si el reloj no es válido.
  */
-bool ClockSetTime(clock_t self, const clock_time_t *new_time)
-{
-    if (new_time == NULL ||
-        new_time->time.hours[0] > 9 || new_time->time.hours[1] > 2 ||
-        (new_time->time.hours[1] == 2 && new_time->time.hours[0] > 3) ||
-        new_time->time.minutes[0] > 9 || new_time->time.minutes[1] > 5 ||
-        new_time->time.seconds[0] > 9 || new_time->time.seconds[1] > 5)
-    {
+bool ClockSetTime(clock_t self, const clock_time_t * new_time) {
+    if (new_time == NULL || new_time->time.hours[0] > 9 || new_time->time.hours[1] > 2 ||
+        (new_time->time.hours[1] == 2 && new_time->time.hours[0] > 3) || new_time->time.minutes[0] > 9 ||
+        new_time->time.minutes[1] > 5 || new_time->time.seconds[0] > 9 || new_time->time.seconds[1] > 5) {
         self->valid = false;
-    }
-    else
-    {
+    } else {
         self->valid = true;
         memcpy(&self->current_time, new_time, sizeof(clock_time_t));
     }
@@ -116,38 +107,29 @@ bool ClockSetTime(clock_t self, const clock_time_t *new_time)
  * Si se alcanza el límite de ticks por segundo, se incrementa la hora, minutos y segundos según corresponda.
  * @param self Puntero al reloj.
  */
-void ClockNewTick(clock_t self)
-{
+void ClockNewTick(clock_t self) {
     self->ticks_per_second++;
-    if (self->ticks_per_second == 8)
-    {
+    if (self->ticks_per_second == 1000) {
         self->ticks_per_second = 0;
         self->current_time.time.seconds[0]++;
-        if (self->current_time.time.seconds[0] > 9)
-        {
+        if (self->current_time.time.seconds[0] > 9) {
             self->current_time.time.seconds[0] = 0;
             self->current_time.time.seconds[1]++;
-            if (self->current_time.time.seconds[1] > 5)
-            {
+            if (self->current_time.time.seconds[1] > 5) {
                 self->current_time.time.seconds[1] = 0;
                 self->current_time.time.minutes[0]++;
-                if (self->current_time.time.minutes[0] > 9)
-                {
+                if (self->current_time.time.minutes[0] > 9) {
                     self->current_time.time.minutes[0] = 0;
                     self->current_time.time.minutes[1]++;
-                    if (self->current_time.time.minutes[1] > 5)
-                    {
+                    if (self->current_time.time.minutes[1] > 5) {
                         self->current_time.time.minutes[1] = 0;
                         self->current_time.time.hours[0]++;
-                        if (self->current_time.time.hours[0] > 9)
-                        {
+                        if (self->current_time.time.hours[0] > 9) {
                             self->current_time.time.hours[0] = 0;
                             self->current_time.time.hours[1]++;
                         }
                         if (self->current_time.time.hours[1] > 2 ||
-                            (self->current_time.time.hours[1] == 2 &&
-                             self->current_time.time.hours[0] > 3))
-                        {
+                            (self->current_time.time.hours[1] == 2 && self->current_time.time.hours[0] > 3)) {
                             self->current_time.time.hours[1] = 0;
                             self->current_time.time.hours[0] = 0;
                         }
@@ -165,8 +147,7 @@ void ClockNewTick(clock_t self)
  * @param alarm_time Puntero a la hora de la alarma que se desea establecer.
  * @return Verdadero si se estableció la alarma correctamente, falso si el reloj no es válido.
  */
-bool ClockSetAlarm(clock_t self, const clock_time_t *alarm_time)
-{
+bool ClockSetAlarm(clock_t self, const clock_time_t * alarm_time) {
     self->valid = true;
     memcpy(&self->alarm_time, alarm_time, sizeof(clock_time_t));
     return self->valid;
@@ -179,8 +160,7 @@ bool ClockSetAlarm(clock_t self, const clock_time_t *alarm_time)
  * @param alarm_time Puntero donde se almacenará la hora de la alarma.
  * @return Verdadero si se obtuvo la hora de la alarma correctamente, falso si el reloj no es válido.
  */
-bool ClockGetAlarm(clock_t self, clock_time_t *alarm_time)
-{
+bool ClockGetAlarm(clock_t self, clock_time_t * alarm_time) {
     memcpy(alarm_time, &self->alarm_time, sizeof(clock_time_t));
     return self->valid;
 }
@@ -191,20 +171,15 @@ bool ClockGetAlarm(clock_t self, clock_time_t *alarm_time)
  * @param self Puntero al reloj.
  * @return Verdadero si la alarma está sonando, falso en caso contrario.
  */
-bool ClockAlarmIsRinging(clock_t self)
-{
+bool ClockAlarmIsRinging(clock_t self) {
     if (self->current_time.time.hours[0] == self->alarm_time.time.hours[0] &&
         self->current_time.time.hours[1] == self->alarm_time.time.hours[1] &&
         self->current_time.time.minutes[0] == self->alarm_time.time.minutes[0] &&
         self->current_time.time.minutes[1] == self->alarm_time.time.minutes[1] &&
         self->current_time.time.seconds[0] == self->alarm_time.time.seconds[0] &&
-        self->current_time.time.seconds[1] == self->alarm_time.time.seconds[1] &&
-        self->alarm_enabled)
-    {
+        self->current_time.time.seconds[1] == self->alarm_time.time.seconds[1] && self->alarm_enabled) {
         self->alarm_ringing = true;
-    }
-    else
-    {
+    } else {
         self->alarm_ringing = false;
     }
 
@@ -217,14 +192,10 @@ bool ClockAlarmIsRinging(clock_t self)
  * @param self Puntero al reloj.
  * @param enable Verdadero para habilitar la alarma, falso para deshabilitarla.
  */
-void ClockSetStateAlarm(clock_t self, bool enable)
-{
-    if (enable)
-    {
+void ClockSetStateAlarm(clock_t self, bool enable) {
+    if (enable) {
         self->alarm_enabled = true;
-    }
-    else
-    {
+    } else {
         self->alarm_enabled = false;
     }
 }
@@ -235,24 +206,19 @@ void ClockSetStateAlarm(clock_t self, bool enable)
  * Resetea el estado de self->alarm_ringing a falso.
  * @param self Puntero al reloj.
  */
-void ClockPostponeAlarm(clock_t self)
-{
+void ClockPostponeAlarm(clock_t self) {
     self->alarm_ringing = false;
 
     self->alarm_time.time.minutes[1]++;
-    if (self->alarm_time.time.minutes[1] > 5)
-    {
+    if (self->alarm_time.time.minutes[1] > 5) {
         self->alarm_time.time.minutes[1] = 0;
         self->alarm_time.time.hours[0]++;
-        if (self->alarm_time.time.hours[0] > 9)
-        {
+        if (self->alarm_time.time.hours[0] > 9) {
             self->alarm_time.time.hours[0] = 0;
             self->alarm_time.time.hours[1]++;
         }
         if (self->alarm_time.time.hours[1] > 2 ||
-            (self->alarm_time.time.hours[1] == 2 &&
-             self->alarm_time.time.hours[0] > 3))
-        {
+            (self->alarm_time.time.hours[1] == 2 && self->alarm_time.time.hours[0] > 3)) {
             self->alarm_time.time.hours[1] = 0;
             self->alarm_time.time.hours[0] = 0;
         }
@@ -265,8 +231,7 @@ void ClockPostponeAlarm(clock_t self)
  * Si la hora actual es 00:00, habilita la alarma automáticamente.
  * @param self Puntero al reloj.
  */
-void ClockResetAlarm(clock_t clock)
-{
+void ClockResetAlarm(clock_t clock) {
     clock->alarm_valid = false;
     clock->alarm_ringing = false;
     clock->alarm_enabled = false;
@@ -279,15 +244,12 @@ void ClockResetAlarm(clock_t clock)
  * Si es así, habilita la alarma automáticamente.
  * @param self Puntero al reloj.
  */
-void ClockRestartAlarm(clock_t self)
-{
+void ClockRestartAlarm(clock_t self) {
     self->alarm_ringing = false;
     self->alarm_enabled = true;
 
-    if (self->current_time.bcd[0] == 0 && self->current_time.bcd[1] == 0 &&
-        self->current_time.bcd[2] == 0 && self->current_time.bcd[3] == 0 &&
-        self->current_time.bcd[4] == 0 && self->current_time.bcd[5] == 0)
-    {
+    if (self->current_time.bcd[0] == 0 && self->current_time.bcd[1] == 0 && self->current_time.bcd[2] == 0 &&
+        self->current_time.bcd[3] == 0 && self->current_time.bcd[4] == 0 && self->current_time.bcd[5] == 0) {
         self->alarm_enabled = true; // Si la hora actual es 00:00, habilitamos la alarma
     }
 }
@@ -300,10 +262,8 @@ void ClockRestartAlarm(clock_t self)
  * @param minutes Número de minutos a posponer (debe ser entre 1 y 59).
  * @return Verdadero si se pospuso la alarma correctamente, falso si el número de minutos es inválido.
  */
-bool ClockPostponeAlarmRandomMinutes(clock_t self, uint8_t minutes)
-{
-    if (minutes == 0 || minutes >= 60)
-    {
+bool ClockPostponeAlarmRandomMinutes(clock_t self, uint8_t minutes) {
+    if (minutes == 0 || minutes >= 60) {
         return false;
     }
     self->alarm_ringing = false;

@@ -41,6 +41,8 @@
 /* === Headers files inclusions =============================================================== */
 
 #include "bsp.h"
+#include "chip.h"
+#include "clock.h"
 #include <stdbool.h>
 
 /* === Macros definitions ====================================================================== */
@@ -53,91 +55,41 @@
 
 /* === Public variable definitions ============================================================= */
 
+static const struct board_s * board = NULL;
+
+volatile uint32_t ticks = 0;
+
 /* === Private variable definitions ============================================================ */
 
 /* === Private function implementation ========================================================= */
 
 /* === Public function implementation ========================================================= */
 
+void SysTick_Handler(void) {
+    ticks++;
+
+    if (board) {
+        ScreenRefresh(board->screen);
+    }
+}
+
+void ConfigSysTick(void) {
+    // Configura el SysTick para generar una interrupción cada 1 ms
+    /* Activate SysTick */
+    SystemCoreClockUpdate();
+    SysTick_Config((SystemCoreClock / 1000) - 1);
+
+    /* Update priority set by SysTick_Config */
+    NVIC_SetPriority(SysTick_IRQn, (1 << __NVIC_PRIO_BITS) - 1);
+}
+
 int main(void) {
-    int divisor = 0;
-    // int cont_R = 0;
-    // int cont_G = 0;
-    // int cont_B = 0;
-    bool flag = true;
-    uint8_t value[4] = {1, 2, 3, 4};
 
-    board_t board = BoardCreate();
+    ConfigSysTick();
 
-    ScreenWriteBCD(board->screen, value, 4);
-    DisplayFlashDigits(board->screen, 1, 2, 50);
-    DisplayFlashDot(board->screen, 0, 10);
-    DisplayFlashDot(board->screen, 1, 20);
-    DisplayFlashDot(board->screen, 2, 30);
-    DisplayFlashDot(board->screen, 3, 40);
+    board = BoardCreate();
 
     while (true) {
-        divisor++;
-
-        if (flag) {
-            DigitalOutputDeactivate(board->led_R);
-            DigitalOutputDeactivate(board->led_G);
-            DigitalOutputDeactivate(board->led_B);
-            flag = false;
-        }
-
-        // cont_R++;
-        // cont_G++;
-        // cont_B++;
-
-        // if (DigitalInputGetIsActive(board->set_alarm) != 0) {
-        //     DigitalOutputActivate(board->led_R);
-        // }
-
-        // if ((DigitalInputGetIsActive(board->set_time) != 0) || (cont_R == 500)) {
-        //     DigitalOutputDeactivate(board->led_R);
-        // }
-
-        // if (DigitalInputGetIsActive(board->increment) != 0) {
-        //     DigitalOutputActivate(board->led_G);
-        // }
-
-        // if ((DigitalInputGetIsActive(board->decrement) != 0) || (cont_G == 800)) {
-        //     DigitalOutputDeactivate(board->led_G);
-        // }
-
-        // if (DigitalInputGetIsActive(board->cancel) != 0) {
-        //     DigitalOutputActivate(board->led_B);
-        // }
-
-        // if ((DigitalInputGetIsActive(board->accept) != 0) || (cont_B == 1200)) {
-        //     DigitalOutputDeactivate(board->led_B);
-        // }
-
-        // if (divisor == 5) {
-        //     divisor = 0;
-        // }
-
-        // if (cont_R == 500) {
-        //     cont_R = 0;
-        // }
-        // if (cont_G == 800) {
-        //     cont_G = 0;
-        // }
-        // if (cont_B == 1200) {
-        //     cont_B = 0;
-        // }
-
-        if (DigitalInputGetIsActive(board->cancel) != 0) {
-            DisplayFlashDigits(board->screen, 0, 1, 50);
-        } else if (DigitalInputGetIsActive(board->accept) != 0) {
-            DisplayFlashDigits(board->screen, 2, 3, 50);
-        }
-
-        ScreenRefresh(board->screen);
-        for (int delay = 0; delay < 25000; delay++) {
-            __asm("NOP");
-        }
     }
 }
 
