@@ -55,7 +55,13 @@
 
 /* === Public variable definitions ============================================================= */
 
-typedef enum { STATE_SHOW_TIME, STATE_ADJUST_MINUTES, STATE_ADJUST_HOURS } clock_state_t;
+typedef enum {
+    STATE_SHOW_TIME,
+    STATE_ADJUST_TIME_MINUTES,
+    STATE_ADJUST_TIME_HOURS,
+    STATE_ADJUST_ALARM_MINUTES,
+    STATE_ADJUST_ALARM_HOURS
+} clock_state_t;
 
 static clock_state_t current_state = STATE_SHOW_TIME;
 
@@ -64,9 +70,14 @@ static struct clock_s * clock = NULL;
 
 bool adjusting_time = false;
 uint32_t set_time_pressed_ticks = 0;
-uint32_t last_activity_ticks = 0;
+uint32_t last_activity_ticks_time = 0;
 clock_time_t time_backup;
 clock_time_t editable_time;
+clock_time_t editable_alarm;
+
+bool adjusting_alarm = false;
+uint32_t set_alarm_pressed_ticks = 0;
+uint32_t last_activity_ticks_alarm = 0;
 
 volatile uint32_t ticks = 0;
 
@@ -99,16 +110,37 @@ void SysTick_Handler(void) {
                 // Hacemos una copia de la hora actual como backup y editable
                 ClockGetTime(clock, &time_backup);
                 editable_time = time_backup;
-                last_activity_ticks = ticks;
+                last_activity_ticks_time = ticks;
             }
         } else {
             set_time_pressed_ticks = 0;
         }
     } else {
         // En modo ajuste, verificar inactividad de 30 segundos
-        if ((ticks - last_activity_ticks) >= 300000) {
+        if ((ticks - last_activity_ticks_time) >= 300000) {
             // Salir del modo ajuste y descartar cambios
             adjusting_time = false;
+        }
+    }
+
+    // Detección de pulsación larga del botón 'set_alarm'
+    if (!adjusting_alarm) {
+        if (DigitalInputGetIsActive(board->set_alarm)) {
+            set_alarm_pressed_ticks++;
+            if (set_alarm_pressed_ticks >= 30000) {
+                adjusting_alarm = true;
+                set_alarm_pressed_ticks = 0;
+
+                last_activity_ticks_alarm = ticks;
+            }
+        } else {
+            set_alarm_pressed_ticks = 0;
+        }
+    } else {
+        // En modo ajuste, verificar inactividad de 30 segundos
+        if ((ticks - last_activity_ticks_alarm) >= 300000) {
+            // Salir del modo ajuste y descartar cambios
+            adjusting_alarm = false;
         }
     }
 }
@@ -129,7 +161,9 @@ int main(void) {
 
     board = BoardCreate();
     clock = ClockCreate();
+
     clock_time_t hora;
+
     bool valid_time;
     bool flanco_increment = true;
     bool flanco_decrement = true;
@@ -138,23 +172,32 @@ int main(void) {
     while (true) {
 
         switch (current_state) {
+            /*-------------------Funcionamiento Normal-------------------------------------------*/
         case STATE_SHOW_TIME:
             valid_time = ClockGetTime(clock, &hora);
             ScreenWriteBCD(board->screen, hora.bcd, 4);
 
             if (valid_time) {
                 DisplayFlashDigits(board->screen, 0, 3, 0);
+                DisplayFlashDot(board->screen, 0, 1000, false);
+                DisplayFlashDot(board->screen, 1, 1000, true);
+                DisplayFlashDot(board->screen, 2, 1000, false);
+                DisplayFlashDot(board->screen, 3, 1000, false);
             } else {
                 DisplayFlashDigits(board->screen, 0, 3, 1000);
                 DisplayFlashDot(board->screen, 1, 1000, true);
             }
 
             if (adjusting_time) {
-                current_state = STATE_ADJUST_MINUTES;
+                current_state = STATE_ADJUST_TIME_MINUTES;
+            }
+            if (adjusting_alarm) {
+                current_state = STATE_ADJUST_ALARM_MINUTES;
             }
             break;
 
-        case STATE_ADJUST_MINUTES:
+            /*-------------------Puesta en Hora------------------------------------------------*/
+        case STATE_ADJUST_TIME_MINUTES:
             if (adjusting_time) {
                 ScreenWriteBCD(board->screen, editable_time.bcd, 4);
                 DisplayFlashDigits(board->screen, 2, 3, 1000);
@@ -164,7 +207,7 @@ int main(void) {
                 }
                 if (DigitalInputGetIsActive(board->increment) == 1 && flanco_increment) {
                     IncrementMinutes(&editable_time);
-                    last_activity_ticks = ticks;
+                    last_activity_ticks_time = ticks;
                     flanco_increment = false;
                 }
 
@@ -173,7 +216,7 @@ int main(void) {
                 }
                 if (DigitalInputGetIsActive(board->decrement) == 1 && flanco_decrement) {
                     DecrementMinutes(&editable_time);
-                    last_activity_ticks = ticks;
+                    last_activity_ticks_time = ticks;
                     flanco_decrement = false;
                 }
 
@@ -181,8 +224,8 @@ int main(void) {
                     flanco_accept = true;
                 }
                 if (DigitalInputGetIsActive(board->accept) == 1 && flanco_accept) {
-                    current_state = STATE_ADJUST_HOURS;
-                    last_activity_ticks = ticks;
+                    current_state = STATE_ADJUST_TIME_HOURS;
+                    last_activity_ticks_time = ticks;
                     flanco_accept = false;
                 }
             }
@@ -192,7 +235,7 @@ int main(void) {
             }
             break;
 
-        case STATE_ADJUST_HOURS:
+        case STATE_ADJUST_TIME_HOURS:
             if (adjusting_time) {
                 ScreenWriteBCD(board->screen, editable_time.bcd, 4);
                 DisplayFlashDigits(board->screen, 0, 1, 1000);
@@ -202,7 +245,7 @@ int main(void) {
                 }
                 if (DigitalInputGetIsActive(board->increment) == 1 && flanco_increment) {
                     IncrementHours(&editable_time);
-                    last_activity_ticks = ticks;
+                    last_activity_ticks_time = ticks;
                     flanco_increment = false;
                 }
 
@@ -211,7 +254,7 @@ int main(void) {
                 }
                 if (DigitalInputGetIsActive(board->decrement) == 1 && flanco_decrement) {
                     DecrementHours(&editable_time);
-                    last_activity_ticks = ticks;
+                    last_activity_ticks_time = ticks;
                     flanco_decrement = false;
                 }
 
@@ -229,6 +272,93 @@ int main(void) {
             if (!adjusting_time || DigitalInputGetIsActive(board->cancel) != 0) {
                 current_state = STATE_SHOW_TIME;
                 adjusting_time = false;
+            }
+
+            break;
+
+            /*-------------------Seteo de Alarma-----------------------------------------------*/
+        case STATE_ADJUST_ALARM_MINUTES:
+            if (adjusting_alarm) {
+
+                DisplayFlashDot(board->screen, 0, 1000, true);
+                DisplayFlashDot(board->screen, 1, 1000, true);
+                DisplayFlashDot(board->screen, 2, 1000, true);
+                DisplayFlashDot(board->screen, 3, 1000, true);
+                DisplayFlashDigits(board->screen, 2, 3, 1000);
+
+                ScreenWriteBCD(board->screen, editable_alarm.bcd, 4);
+
+                if (DigitalInputGetIsActive(board->increment) == 0) {
+                    flanco_increment = true;
+                }
+                if (DigitalInputGetIsActive(board->increment) == 1 && flanco_increment) {
+                    IncrementMinutes(&editable_alarm);
+                    last_activity_ticks_alarm = ticks;
+                    flanco_increment = false;
+                }
+
+                if (DigitalInputGetIsActive(board->decrement) == 0) {
+                    flanco_decrement = true;
+                }
+                if (DigitalInputGetIsActive(board->decrement) == 1 && flanco_decrement) {
+                    DecrementMinutes(&editable_alarm);
+                    last_activity_ticks_alarm = ticks;
+                    flanco_decrement = false;
+                }
+
+                if (DigitalInputGetIsActive(board->accept) == 0) {
+                    flanco_accept = true;
+                }
+                if (DigitalInputGetIsActive(board->accept) == 1 && flanco_accept) {
+                    current_state = STATE_ADJUST_ALARM_HOURS;
+                    last_activity_ticks_alarm = ticks;
+                    flanco_accept = false;
+                }
+            }
+            if (!adjusting_alarm || DigitalInputGetIsActive(board->cancel) != 0) {
+                current_state = STATE_SHOW_TIME;
+                adjusting_alarm = false;
+            }
+            break;
+
+        case STATE_ADJUST_ALARM_HOURS:
+            if (adjusting_alarm) {
+
+                ScreenWriteBCD(board->screen, editable_alarm.bcd, 4);
+                DisplayFlashDigits(board->screen, 0, 1, 1000);
+
+                if (DigitalInputGetIsActive(board->increment) == 0) {
+                    flanco_increment = true;
+                }
+                if (DigitalInputGetIsActive(board->increment) == 1 && flanco_increment) {
+                    IncrementHours(&editable_alarm);
+                    last_activity_ticks_alarm = ticks;
+                    flanco_increment = false;
+                }
+
+                if (DigitalInputGetIsActive(board->decrement) == 0) {
+                    flanco_decrement = true;
+                }
+                if (DigitalInputGetIsActive(board->decrement) == 1 && flanco_decrement) {
+                    DecrementHours(&editable_alarm);
+                    last_activity_ticks_alarm = ticks;
+                    flanco_decrement = false;
+                }
+
+                if (DigitalInputGetIsActive(board->accept) == 0) {
+                    flanco_accept = true;
+                }
+                if (DigitalInputGetIsActive(board->accept) == 1 && flanco_accept) {
+                    editable_alarm.time.seconds[0] = 0; // Aseguramos que los segundos sean 00
+                    editable_alarm.time.seconds[1] = 0;
+                    ClockSetAlarm(clock, &editable_alarm);
+                    current_state = STATE_SHOW_TIME;
+                    adjusting_alarm = false;
+                }
+            }
+            if (!adjusting_alarm || DigitalInputGetIsActive(board->cancel) != 0) {
+                current_state = STATE_SHOW_TIME;
+                adjusting_alarm = false;
             }
 
             break;
