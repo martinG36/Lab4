@@ -62,7 +62,7 @@ digital_output_t DigitalOutputCreate(uint8_t gpio, uint8_t bit, bool inverted) {
     if (self != NULL) {
         self->gpio = gpio;
         self->bit = bit;
-        Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, false);
+        Chip_GPIO_SetPinState(LPC_GPIO_PORT, self->gpio, self->bit, inverted);
         Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, self->gpio, self->bit, true);
     }
     return self;

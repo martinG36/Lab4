@@ -29,59 +29,64 @@ SPDX-License-Identifier: MIT
 /* === Header for C++ compatibility ================================================================================ */
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    /* === Public macros definitions =================================================================================== */
+/* === Public macros definitions =================================================================================== */
 
 #include <stdint.h>
 #include <stdbool.h>
 
-    /* === Public data type declarations =============================================================================== */
+/* === Public data type declarations =============================================================================== */
 
-    typedef union
-    {
-        struct
-        {
-            uint8_t seconds[2];
-            uint8_t minutes[2];
-            uint8_t hours[2];
-        } time;
-        uint8_t bcd[6];
-    } clock_time_t;
+typedef union {
+    struct {
+        uint8_t seconds[2];
+        uint8_t minutes[2];
+        uint8_t hours[2];
+    } time;
+    uint8_t bcd[6];
+} clock_time_t;
 
-    typedef struct clock_s *clock_t;
+typedef struct clock_s * clock_t;
 
-    clock_t ClockCreate(uint16_t ticks_per_second);
+clock_t ClockCreate(void);
 
-    bool ClockGetTime(clock_t clock, clock_time_t *result);
+bool ClockGetTime(clock_t clock, clock_time_t * result);
 
-    bool ClockSetTime(clock_t clock, const clock_time_t *new_time);
+bool ClockSetTime(clock_t clock, const clock_time_t * new_time);
 
-    void ClockNewTick(clock_t clock);
+void ClockNewTick(clock_t clock);
 
-    bool ClockSetAlarm(clock_t self, const clock_time_t *alarm_time);
+bool ClockSetAlarm(clock_t self, const clock_time_t * alarm_time);
 
-    bool ClockGetAlarm(clock_t self, clock_time_t *alarm_time);
+bool ClockGetAlarm(clock_t self, clock_time_t * alarm_time);
 
-    bool ClockAlarmIsRinging(clock_t self);
+bool ClockAlarmIsRinging(clock_t self);
 
-    void ClockSetStateAlarm(clock_t self, bool enable);
+void ClockSetStateAlarm(clock_t self, bool enable);
 
-    void ClockPostponeAlarm(clock_t self);
+void ClockPostponeAlarm(clock_t self);
 
-    void ClockResetAlarm(clock_t self);
+void ClockResetAlarm(clock_t self);
 
-    void ClockRestartAlarm(clock_t self);
+void ClockRestartAlarm(clock_t self);
 
-    bool ClockPostponeAlarmRandomMinutes(clock_t self, uint8_t minutes);
+bool ClockPostponeAlarmRandomMinutes(clock_t self, uint8_t minutes);
 
-    /* === Public variable declarations ================================================================================ */
+void IncrementMinutes(clock_time_t * clock);
 
-    /* === Public function declarations ================================================================================ */
+void DecrementMinutes(clock_time_t * clock);
 
-    /* === End of conditional blocks =================================================================================== */
+void IncrementHours(clock_time_t * clock);
+
+void DecrementHours(clock_time_t * clock);
+
+/* === Public variable declarations ================================================================================ */
+
+/* === Public function declarations ================================================================================ */
+
+/* === End of conditional blocks =================================================================================== */
 
 #ifdef __cplusplus
 }

@@ -111,8 +111,9 @@ int DisplayFlashDigits(screen_t display, uint8_t from, uint8_t to, uint16_t divi
  * @param divisor Factor de división de la frecuencia de refresco para el parpadeo del punto decimal.
  * @return void
  */
-int DisplayFlashDot(screen_t self, uint8_t digit, uint16_t divisor);
+int DisplayFlashDot(screen_t self, uint8_t digit, uint16_t divisor, bool flashing_enabled);
 
+int DotTurningOn(screen_t self, uint8_t digit, bool turning_on);
 /* === End of conditional blocks =================================================================================== */
 
 #ifdef __cplusplus

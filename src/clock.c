@@ -61,8 +61,7 @@ struct clock_s {
  * Inicializa el reloj con una hora inválida (00:00) y un indicador de validez en falso.
  * @return Un puntero al reloj creado.
  */
-clock_t ClockCreate(uint16_t ticks_per_second) {
-    (void)ticks_per_second;
+clock_t ClockCreate(void) {
     static struct clock_s self[1];
     memset(self, 0, sizeof(struct clock_s));
     self->valid = false;
@@ -109,7 +108,7 @@ bool ClockSetTime(clock_t self, const clock_time_t * new_time) {
  */
 void ClockNewTick(clock_t self) {
     self->ticks_per_second++;
-    if (self->ticks_per_second == 1000) {
+    if (self->ticks_per_second == 10000) {
         self->ticks_per_second = 0;
         self->current_time.time.seconds[0]++;
         if (self->current_time.time.seconds[0] > 9) {
@@ -288,4 +287,57 @@ bool ClockPostponeAlarmRandomMinutes(clock_t self, uint8_t minutes) {
     return true;
 }
 
+void IncrementMinutes(clock_time_t * clock) {
+    clock->time.minutes[0]++;
+    if (clock->time.minutes[0] > 9) {
+        clock->time.minutes[0] = 0;
+        clock->time.minutes[1]++;
+        if (clock->time.minutes[1] > 5) {
+            clock->time.minutes[1] = 0;
+            clock->time.minutes[0] = 0;
+        }
+    }
+}
+
+void DecrementMinutes(clock_time_t * clock) {
+    if (clock->time.minutes[0] == 0) {
+        clock->time.minutes[0] = 9;
+        if (clock->time.minutes[1] == 0) {
+            clock->time.minutes[1] = 5;
+            clock->time.minutes[0] = 9;
+        } else {
+            clock->time.minutes[1]--;
+        }
+    } else {
+        clock->time.minutes[0]--;
+    }
+}
+
+void IncrementHours(clock_time_t * clock) {
+    if (clock->time.hours[0] == 3 && clock->time.hours[1] == 2) {
+        clock->time.hours[0] = 0;
+        clock->time.hours[1] = 0;
+    } else if (clock->time.hours[0] == 9) {
+        clock->time.hours[0] = 0;
+        clock->time.hours[1]++;
+    } else {
+        clock->time.hours[0]++;
+    }
+}
+
+void DecrementHours(clock_time_t * clock) {
+    if (clock->time.hours[0] == 0 && clock->time.hours[1] == 0) {
+        clock->time.hours[0] = 3;
+        clock->time.hours[1] = 2;
+    } else if (clock->time.hours[0] == 0) {
+        clock->time.hours[0] = 9;
+        if (clock->time.hours[1] == 0) {
+            clock->time.hours[1] = 2;
+        } else {
+            clock->time.hours[1]--;
+        }
+    } else {
+        clock->time.hours[0]--;
+    }
+}
 /* === End of documentation ======================================================================================== */

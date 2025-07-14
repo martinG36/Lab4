@@ -39,14 +39,17 @@ struct screen_s {
 
     uint8_t flashing_from;               // Dígito desde el cual comenzar a parpadear
     uint8_t flashing_to;                 // Dígito hasta el cual parpadear
-    uint8_t flashing_count_display;      // Contador para el parpadeo de los displays
+    uint16_t flashing_count_display;     // Contador para el parpadeo de los displays
     uint16_t flashing_frequency_display; // Factor de división para el parpadeo de los displays
+
+    bool dot_turning_on[SCREEN_MAX_DIGITS];       // Indica si el punto decimal está encendido
+    bool dot_flashing_enabled[SCREEN_MAX_DIGITS]; // Indica si el punto decimal está habilitado para parpadear
 
     screen_driver_t driver;           // Estructura con funciones de control de pantalla
     uint8_t value[SCREEN_MAX_DIGITS]; // Valores a mostrar
 
     uint16_t flashing_frequency_dot[SCREEN_MAX_DIGITS]; // Factor de división para el parpadeo de los puntos decimales
-    uint8_t flashing_count_dot[SCREEN_MAX_DIGITS];      // Contador para el parpadeo de los puntos decimales
+    uint16_t flashing_count_dot[SCREEN_MAX_DIGITS];     // Contador para el parpadeo de los puntos decimales
 };
 
 /* === Private function declarations =============================================================================== */
@@ -85,6 +88,10 @@ screen_t ScreenCreate(uint8_t digits, screen_driver_t driver) {
         self->flashing_count_display = 0; // Inicializar contador de parpadeo
         self->flashing_frequency_display = 0;
         memset(self->value, 0, sizeof(self->value)); // Limpiar valores previos
+        memset(self->flashing_count_dot, 0,
+               sizeof(self->flashing_count_dot)); // Inicializa en cero los contadores de parpadeo de puntos decimales
+        memset(self->dot_flashing_enabled, false,
+               sizeof(self->dot_flashing_enabled)); // Inhabilitar parpadeo de puntos decimales
     }
     return self;
 }
@@ -96,7 +103,7 @@ void ScreenWriteBCD(screen_t self, uint8_t value[], uint8_t size) {
     }
 
     for (uint8_t i = 0; i < size; i++) {
-        self->value[i] = IMAGES[value[i]]; // Copiar valores a la pantalla
+        self->value[size - 1 - i] = IMAGES[value[i + 2]]; // Copiar valores a la pantalla
     }
 }
 
@@ -120,7 +127,8 @@ void ScreenRefresh(screen_t self) {
         }
     }
 
-    segments |= SEGMENT_P;
+    segments |= SEGMENT_P; // Encender el punto decimal por defecto
+
     if (self->flashing_frequency_dot[self->current_digit] != 0) {
         if (self->current_digit == 0) {
             for (uint8_t i = 0; i < SCREEN_MAX_DIGITS; i++) {
@@ -130,10 +138,21 @@ void ScreenRefresh(screen_t self) {
             }
         }
 
-        if (self->flashing_count_dot[self->current_digit] < (self->flashing_frequency_dot[self->current_digit] / 2)) {
+        if ((self->flashing_count_dot[self->current_digit] < (self->flashing_frequency_dot[self->current_digit] / 2)) &&
+            self->dot_flashing_enabled[self->current_digit]) {
             segments &= ~SEGMENT_P; // Apagar puntos
         }
     }
+
+    if (!self->dot_flashing_enabled[self->current_digit]) {
+        segments &= ~SEGMENT_P; // Apagar punto decimal si no está habilitado
+    }
+
+    // if (self->dot_turning_on[self->current_digit] && self->dot_flashing_enabled[self->current_digit]) {
+    //     segments |= SEGMENT_P; // Encender punto decimal si está habilitado
+    // } else if (!self->dot_turning_on[self->current_digit]) {
+    //     segments &= ~SEGMENT_P; // Apagar punto decimal si no está habilitado
+    // }
 
     self->driver->SegmentsUpdate(segments);         // Actualizar segmentos del dígito actual
     self->driver->DigitTurnOn(self->current_digit); // Encender el dígito actual
@@ -149,19 +168,34 @@ int DisplayFlashDigits(screen_t self, uint8_t from, uint8_t to, uint16_t divisor
         self->flashing_from = from;
         self->flashing_to = to;
         self->flashing_frequency_display = 2 * divisor;
-        self->flashing_count_display = 0; // Reiniciar contador de parpadeo
     }
 
     return result;
 }
 
-int DisplayFlashDot(screen_t self, uint8_t digit, uint16_t divisor) {
+int DisplayFlashDot(screen_t self, uint8_t digit, uint16_t divisor, bool flashing_enabled) {
     int result = 0;
     if ((!self) || (digit >= SCREEN_MAX_DIGITS)) {
         result = -1;
     } else {
         self->flashing_frequency_dot[digit] = 2 * divisor;
-        self->flashing_count_dot[digit] = 0; // Reiniciar contador de parpadeo del punto decimal
+    }
+
+    if (flashing_enabled) {
+        self->dot_flashing_enabled[digit] = true; // Habilitar parpadeo del punto decimal
+    } else {
+        self->dot_flashing_enabled[digit] = false; // Deshabilitar parpadeo del punto decimal
+    }
+
+    return result;
+}
+
+int DotTurningOn(screen_t self, uint8_t digit, bool turning_on) {
+    int result = 0;
+    if ((!self) || (digit >= SCREEN_MAX_DIGITS)) {
+        result = -1;
+    } else {
+        self->dot_turning_on[digit] = turning_on; // Actualizar estado del punto decimal
     }
 
     return result;
