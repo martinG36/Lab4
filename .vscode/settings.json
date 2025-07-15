@@ -5,6 +5,7 @@
         "stddef.h": "c",
         "functional": "c",
         "digital.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "random": "c"
     }
 }

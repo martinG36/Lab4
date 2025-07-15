@@ -39,14 +39,14 @@ extern "C" {
 
 /* === Public macros definitions =================================================================================== */
 
-#define SEGMENT_A (1 << 0) // Segmento A
-#define SEGMENT_B (1 << 1) // Segmento B
-#define SEGMENT_C (1 << 2) // Segmento C
-#define SEGMENT_D (1 << 3) // Segmento D
-#define SEGMENT_E (1 << 4) // Segmento E
-#define SEGMENT_F (1 << 5) // Segmento F
-#define SEGMENT_G (1 << 6) // Segmento G
-#define SEGMENT_P (1 << 7) // Punto decimal
+#define SEGMENT_A (1 << 0) /**< Segmento A */
+#define SEGMENT_B (1 << 1) /**< Segmento B */
+#define SEGMENT_C (1 << 2) /**< Segmento C */
+#define SEGMENT_D (1 << 3) /**< Segmento D */
+#define SEGMENT_E (1 << 4) /**< Segmento E */
+#define SEGMENT_F (1 << 5) /**< Segmento F */
+#define SEGMENT_G (1 << 6) /**< Segmento G */
+#define SEGMENT_P (1 << 7) /**< Punto decimal */
 
 /* === Public data type declarations =============================================================================== */
 
@@ -59,9 +59,9 @@ typedef void (*segments_update_t)(uint8_t);
 typedef void (*digit_turn_on_t)(uint8_t);
 
 typedef struct screen_driver_s {
-    digits_turn_off_t DigitsTurnOff;  // Función para apagar todos los dígitos
-    segments_update_t SegmentsUpdate; // Función para actualizar los segmentos del dígito actual
-    digit_turn_on_t DigitTurnOn;      // Función para encender un dígito específico
+    digits_turn_off_t DigitsTurnOff;  /**< Función para apagar todos los dígitos */
+    segments_update_t SegmentsUpdate; /**< Función para actualizar los segmentos del dígito actual */
+    digit_turn_on_t DigitTurnOn;      /**< Función para encender un dígito específico */
 } const * screen_driver_t;
 
 /* === Public variable declarations ================================================================================ */
@@ -113,6 +113,13 @@ int DisplayFlashDigits(screen_t display, uint8_t from, uint8_t to, uint16_t divi
  */
 int DisplayFlashDot(screen_t self, uint8_t digit, uint16_t divisor, bool flashing_enabled);
 
+/**
+ * @brief Función para encender o apagar el punto decimal de un dígito específico.
+ * @param self Puntero al descriptor de la pantalla con la que se quiere operar.
+ * @param digit Posición del dígito cuyo punto decimal se quiere encender o apagar.
+ * @param turning_on Indica si se debe encender (true) o apagar (false) el punto decimal.
+ * @return void
+ */
 int DotTurningOn(screen_t self, uint8_t digit, bool turning_on);
 /* === End of conditional blocks =================================================================================== */
 
