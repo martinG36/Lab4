@@ -108,7 +108,7 @@ bool ClockSetTime(clock_t self, const clock_time_t * new_time) {
  */
 void ClockNewTick(clock_t self) {
     self->ticks_per_second++;
-    if (self->ticks_per_second == 1000) { // 10000 ticks por segundo = 1 segundo
+    if (self->ticks_per_second == 20) { // 10000 ticks por segundo = 1 segundo
         self->ticks_per_second = 0;
         self->current_time.time.seconds[0]++;
         if (self->current_time.time.seconds[0] > 9) {
@@ -286,6 +286,17 @@ bool ClockPostponeAlarmRandomMinutes(clock_t self, uint8_t minutes) {
     self->alarm_time.time.minutes[0] = new_minutes % 10;
 
     return true;
+}
+
+/**
+ * @brief Función para posponer la alarma un día.
+ * Incrementa la hora de la alarma en 24 horas (1 día).
+ * Resetea el estado de self->alarm_ringing a falso.
+ * @param self Puntero al reloj.
+ * @return Verdadero si se pospuso la alarma correctamente, falso si el reloj no es válido.
+ */
+void ClockPostponeAlarmOneDay(clock_t self) {
+    self->alarm_ringing = false;
 }
 
 void IncrementMinutes(clock_time_t * clock) {

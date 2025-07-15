@@ -406,14 +406,15 @@ int main(void) {
                 ClockPostponeAlarmRandomMinutes(clock, 5);
                 flanco_accept = false;
             }
-            // if (DigitalInputGetIsActive(board->cancel) == 0) {
-            //     flanco_cancel = true;
-            // }
-            // if (DigitalInputGetIsActive(board->cancel) == 1 && flanco_cancel) {
-            //     ClockResetAlarm(clock);
-            //     DigitalOutputDeactivate(board->led_R);
-            //     flanco_cancel = false;
-            // }
+
+            if (DigitalInputGetIsActive(board->cancel) == 0) {
+                flanco_cancel = true;
+            }
+            if (DigitalInputGetIsActive(board->cancel) == 1 && flanco_cancel) {
+                ClockPostponeAlarmOneDay(clock);
+                DigitalOutputDeactivate(board->led_R);
+                flanco_cancel = false;
+            }
 
             current_state = STATE_SHOW_TIME;
             break;

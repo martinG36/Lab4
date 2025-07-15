@@ -74,6 +74,8 @@ void ClockRestartAlarm(clock_t self);
 
 bool ClockPostponeAlarmRandomMinutes(clock_t self, uint8_t minutes);
 
+void ClockPostponeAlarmOneDay(clock_t self);
+
 void IncrementMinutes(clock_time_t * clock);
 
 void DecrementMinutes(clock_time_t * clock);
