@@ -108,7 +108,7 @@ bool ClockSetTime(clock_t self, const clock_time_t * new_time) {
  */
 void ClockNewTick(clock_t self) {
     self->ticks_per_second++;
-    if (self->ticks_per_second == 10000) {
+    if (self->ticks_per_second == 1000) { // 10000 ticks por segundo = 1 segundo
         self->ticks_per_second = 0;
         self->current_time.time.seconds[0]++;
         if (self->current_time.time.seconds[0] > 9) {
@@ -178,8 +178,6 @@ bool ClockAlarmIsRinging(clock_t self) {
         self->current_time.time.seconds[0] == self->alarm_time.time.seconds[0] &&
         self->current_time.time.seconds[1] == self->alarm_time.time.seconds[1] && self->alarm_enabled) {
         self->alarm_ringing = true;
-    } else {
-        self->alarm_ringing = false;
     }
 
     return self->alarm_ringing;
@@ -265,20 +263,23 @@ bool ClockPostponeAlarmRandomMinutes(clock_t self, uint8_t minutes) {
     if (minutes == 0 || minutes >= 60) {
         return false;
     }
+
     self->alarm_ringing = false;
 
-    uint8_t hours_tens = self->alarm_time.time.hours[1];
-    uint8_t hours_units = self->alarm_time.time.hours[0];
-    uint8_t minutes_tens = self->alarm_time.time.minutes[1];
-    uint8_t minutes_units = self->alarm_time.time.minutes[0];
+    // Convertir la hora actual de la alarma a minutos totales
+    uint8_t hours = self->current_time.time.hours[1] * 10 + self->current_time.time.hours[0];
+    uint8_t mins = self->current_time.time.minutes[1] * 10 + self->current_time.time.minutes[0];
 
-    uint16_t total_minutes = (hours_tens * 10 + hours_units) * 60 + (minutes_tens * 10 + minutes_units);
-    total_minutes = (total_minutes + minutes) % 1440; // Asegura que no supere 24h
+    uint16_t total_minutes = hours * 60 + mins;
 
-    // Convertir de vuelta a BCD
+    // Sumar los minutos
+    total_minutes = (total_minutes + minutes) % 1440; // 1440 = 24 * 60 minutos
+
+    // Convertir de nuevo a horas y minutos
     uint8_t new_hours = total_minutes / 60;
     uint8_t new_minutes = total_minutes % 60;
 
+    // Guardar en formato BCD nuevamente
     self->alarm_time.time.hours[1] = new_hours / 10;
     self->alarm_time.time.hours[0] = new_hours % 10;
     self->alarm_time.time.minutes[1] = new_minutes / 10;

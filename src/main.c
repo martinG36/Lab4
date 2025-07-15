@@ -60,7 +60,8 @@ typedef enum {
     STATE_ADJUST_TIME_MINUTES,
     STATE_ADJUST_TIME_HOURS,
     STATE_ADJUST_ALARM_MINUTES,
-    STATE_ADJUST_ALARM_HOURS
+    STATE_ADJUST_ALARM_HOURS,
+    STATE_CONTROL_ALARM
 } clock_state_t;
 
 static clock_state_t current_state = STATE_SHOW_TIME;
@@ -168,6 +169,10 @@ int main(void) {
     bool flanco_increment = true;
     bool flanco_decrement = true;
     bool flanco_accept = true;
+    bool flanco_cancel = true;
+    bool alarm_is_active = false;
+
+    DigitalOutputDeactivate(board->led_R);
 
     while (true) {
 
@@ -182,7 +187,14 @@ int main(void) {
                 DisplayFlashDot(board->screen, 0, 1000, false);
                 DisplayFlashDot(board->screen, 1, 1000, true);
                 DisplayFlashDot(board->screen, 2, 1000, false);
-                DisplayFlashDot(board->screen, 3, 1000, false);
+                if (alarm_is_active) {
+                    DisplayFlashDot(board->screen, 3, 0, true);
+                    ClockSetStateAlarm(clock, true);
+                    current_state = STATE_CONTROL_ALARM;
+                } else {
+                    DisplayFlashDot(board->screen, 3, 1000, false);
+                    ClockSetStateAlarm(clock, false);
+                }
             } else {
                 DisplayFlashDigits(board->screen, 0, 3, 1000);
                 DisplayFlashDot(board->screen, 1, 1000, true);
@@ -194,6 +206,22 @@ int main(void) {
             if (adjusting_alarm) {
                 current_state = STATE_ADJUST_ALARM_MINUTES;
             }
+
+            if (DigitalInputGetIsActive(board->accept) == 0) {
+                flanco_accept = true;
+            }
+            if ((DigitalInputGetIsActive(board->accept) == 1 && flanco_accept) && !ClockAlarmIsRinging(clock)) {
+                alarm_is_active = true;
+                flanco_accept = false;
+            }
+            if (DigitalInputGetIsActive(board->cancel) == 0) {
+                flanco_cancel = true;
+            }
+            if ((DigitalInputGetIsActive(board->cancel) == 1 && flanco_cancel) && !ClockAlarmIsRinging(clock)) {
+                alarm_is_active = false;
+                flanco_cancel = false;
+            }
+
             break;
 
             /*-------------------Puesta en Hora------------------------------------------------*/
@@ -361,6 +389,33 @@ int main(void) {
                 adjusting_alarm = false;
             }
 
+            break;
+
+            /*-------------------Contol de Alarma-----------------------------------------------*/
+        case STATE_CONTROL_ALARM:
+            if (ClockAlarmIsRinging(clock) && alarm_is_active) {
+                DigitalOutputActivate(board->led_R);
+            } else if (!ClockAlarmIsRinging(clock) || !alarm_is_active) {
+                DigitalOutputDeactivate(board->led_R);
+            }
+
+            if (DigitalInputGetIsActive(board->accept) == 0) {
+                flanco_accept = true;
+            }
+            if (DigitalInputGetIsActive(board->accept) == 1 && flanco_accept) {
+                ClockPostponeAlarmRandomMinutes(clock, 5);
+                flanco_accept = false;
+            }
+            // if (DigitalInputGetIsActive(board->cancel) == 0) {
+            //     flanco_cancel = true;
+            // }
+            // if (DigitalInputGetIsActive(board->cancel) == 1 && flanco_cancel) {
+            //     ClockResetAlarm(clock);
+            //     DigitalOutputDeactivate(board->led_R);
+            //     flanco_cancel = false;
+            // }
+
+            current_state = STATE_SHOW_TIME;
             break;
         }
     }
