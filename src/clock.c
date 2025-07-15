@@ -84,7 +84,7 @@ bool ClockSetTime(clock_t self, const clock_time_t * new_time) {
 
 void ClockNewTick(clock_t self) {
     self->ticks_per_second++;
-    if (self->ticks_per_second == 10000) { /**< 10000 ticks por segundo = 1 segundo */
+    if (self->ticks_per_second == 20) { /**< 10000 ticks por segundo = 1 segundo */
         self->ticks_per_second = 0;
         self->current_time.time.seconds[0]++;
         if (self->current_time.time.seconds[0] > 9) {
@@ -118,6 +118,7 @@ void ClockNewTick(clock_t self) {
 bool ClockSetAlarm(clock_t self, const clock_time_t * alarm_time) {
     self->valid = true;
     memcpy(&self->alarm_time, alarm_time, sizeof(clock_time_t));
+    memcpy(&self->snoozed_alarm_time, alarm_time, sizeof(clock_time_t));
     return self->valid;
 }
 
@@ -132,8 +133,12 @@ bool ClockAlarmIsRinging(clock_t self) {
         self->current_time.time.minutes[0] == self->snoozed_alarm_time.time.minutes[0] &&
         self->current_time.time.minutes[1] == self->snoozed_alarm_time.time.minutes[1] &&
         self->current_time.time.seconds[0] == self->snoozed_alarm_time.time.seconds[0] &&
-        self->current_time.time.seconds[1] == self->snoozed_alarm_time.time.seconds[1] && self->alarm_enabled) {
-        self->alarm_ringing = true;
+        self->current_time.time.seconds[1] == self->snoozed_alarm_time.time.seconds[1]) {
+        if (self->alarm_enabled) {
+            self->alarm_ringing = true;
+        } else {
+            memcpy(&self->snoozed_alarm_time, &self->alarm_time, sizeof(clock_time_t));
+        }
     }
 
     return self->alarm_ringing;
