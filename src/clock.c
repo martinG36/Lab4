@@ -84,7 +84,7 @@ bool ClockSetTime(clock_t self, const clock_time_t * new_time) {
 
 void ClockNewTick(clock_t self) {
     self->ticks_per_second++;
-    if (self->ticks_per_second == 20) { /**< 10000 ticks por segundo = 1 segundo */
+    if (self->ticks_per_second == 10000) { /**< 10000 ticks por segundo = 1 segundo */
         self->ticks_per_second = 0;
         self->current_time.time.seconds[0]++;
         if (self->current_time.time.seconds[0] > 9) {
