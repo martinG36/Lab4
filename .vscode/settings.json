@@ -6,6 +6,7 @@
         "functional": "c",
         "digital.h": "c",
         "stdint.h": "c",
-        "random": "c"
+        "random": "c",
+        "freertos.h": "c"
     }
 }
