@@ -45,6 +45,7 @@
 #include "event_groups.h"
 #include "key.h"
 #include "timeMEF.h"
+#include "display.h"
 #include "Mybsp.h"
 #include "chip.h"
 #include "clock.h"
@@ -71,83 +72,100 @@
 
 /* === Private function implementation ========================================================= */
 
+void BlinkingBlue(void * parameters) {
+    while (true) {
+        DigitalOutputToggle(board->led_B);
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}
+
 /* === Public function implementation ========================================================= */
 
 int main(void) {
     EventGroupHandle_t keys_events;
     BaseType_t result;
 
+    BoardSetup();
+    BoardSetup();
+
     board = BoardCreate();
     clock = ClockCreate();
 
     keys_events = xEventGroupCreate();
 
-    clock_time_t hora;
-
-    bool valid_time;
-    bool flanco_increment = true;
-    bool flanco_decrement = true;
-    bool flanco_accept = true;
-    bool flanco_cancel = true;
-    bool alarm_is_active = false;
-
     DigitalOutputDeactivate(board->led_R);
 
-    if (keys_events) {
-        key_task_args_t key_args = malloc(sizeof(*key_args));
-        key_args->event_group = keys_events;
-        key_args->event_bit = TECLA_ACCEPT;
-        key_args->gpio = board->accept;
-        result = xTaskCreate(KeyTask, "KeyAccept", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
+    // if (keys_events) {
+    //     key_task_args_t key_args = malloc(sizeof(*key_args));
+    //     key_args->event_group = keys_events;
+    //     key_args->event_bit = TECLA_ACCEPT;
+    //     key_args->gpio = board->accept;
+    //     result = xTaskCreate(KeyTask, "KeyAccept", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
+    // }
+    // if (result == pdPASS) {
+    //     key_task_args_t key_args = malloc(sizeof(*key_args));
+    //     key_args->event_group = keys_events;
+    //     key_args->event_bit = TECLA_CANCEL;
+    //     key_args->gpio = board->cancel;
+    //     result = xTaskCreate(KeyTask, "KeyCancel", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
+    // }
+    // if (result == pdPASS) {
+    //     key_task_args_t key_args = malloc(sizeof(*key_args));
+    //     key_args->event_group = keys_events;
+    //     key_args->event_bit = TECLA_INCREMENT;
+    //     key_args->gpio = board->increment;
+    //     result = xTaskCreate(KeyTask, "KeyIncrement", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
+    // }
+    // if (result == pdPASS) {
+    //     key_task_args_t key_args = malloc(sizeof(*key_args));
+    //     key_args->event_group = keys_events;
+    //     key_args->event_bit = TECLA_DECREMENT;
+    //     key_args->gpio = board->decrement;
+    //     result = xTaskCreate(KeyTask, "KeyDecrement", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
+    // }
+    // if (result == pdPASS) {
+    //     key_task_args_t key_args = malloc(sizeof(*key_args));
+    //     key_args->event_group = keys_events;
+    //     key_args->event_bit = TECLA_SET_TIME;
+    //     key_args->gpio = board->set_time;
+    //     result = xTaskCreate(KeyTask, "KeySetTime", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
+    // }
+    // if (result == pdPASS) {
+    //     key_task_args_t key_args = malloc(sizeof(*key_args));
+    //     key_args->event_group = keys_events;
+    //     key_args->event_bit = TECLA_SET_ALARM;
+    //     key_args->gpio = board->set_alarm;
+    //     result = xTaskCreate(KeyTask, "KeySetAlarm", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
+    // }
+    // if (result == pdPASS) {
+    //     time_task_args_t time_args = malloc(sizeof(*time_args));
+    //     time_args->event_group = keys_events;
+    //     time_args->accept = TECLA_ACCEPT;
+    //     time_args->cancel = TECLA_CANCEL;
+    //     time_args->increment = TECLA_INCREMENT;
+    //     time_args->decrement = TECLA_DECREMENT;
+    //     time_args->set_time = TECLA_SET_TIME;
+    //     time_args->set_alarm = TECLA_SET_ALARM;
+    //     result = xTaskCreate(MEFTask, "MEF", 2 * configMINIMAL_STACK_SIZE, time_args, tskIDLE_PRIORITY + 3, NULL);
+    // }
+
+    ScreenWriteBCD(board->screen, (uint8_t[]){8, 8, 8, 8, 8, 8}, 6);
+    DisplayFlashDot(board->screen, 0, 0, true);
+    DisplayFlashDot(board->screen, 1, 0, true);
+    DisplayFlashDot(board->screen, 2, 0, true);
+    DisplayFlashDot(board->screen, 3, 0, true);
+    if (true) {
+        result = xTaskCreate(RefreshScreenTask, "RefreshScreen", configMINIMAL_STACK_SIZE, board->screen,
+                             tskIDLE_PRIORITY + 2, NULL);
     }
     if (result == pdPASS) {
-        key_task_args_t key_args = malloc(sizeof(*key_args));
-        key_args->event_group = keys_events;
-        key_args->event_bit = TECLA_CANCEL;
-        key_args->gpio = board->cancel;
-        result = xTaskCreate(KeyTask, "KeyCancel", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
-    }
-    if (result == pdPASS) {
-        key_task_args_t key_args = malloc(sizeof(*key_args));
-        key_args->event_group = keys_events;
-        key_args->event_bit = TECLA_INCREMENT;
-        key_args->gpio = board->increment;
-        result = xTaskCreate(KeyTask, "KeyIncrement", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
-    }
-    if (result == pdPASS) {
-        key_task_args_t key_args = malloc(sizeof(*key_args));
-        key_args->event_group = keys_events;
-        key_args->event_bit = TECLA_DECREMENT;
-        key_args->gpio = board->decrement;
-        result = xTaskCreate(KeyTask, "KeyDecrement", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
-    }
-    if (result == pdPASS) {
-        key_task_args_t key_args = malloc(sizeof(*key_args));
-        key_args->event_group = keys_events;
-        key_args->event_bit = TECLA_SET_TIME;
-        key_args->gpio = board->set_time;
-        result = xTaskCreate(KeyTask, "KeySetTime", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
-    }
-    if (result == pdPASS) {
-        key_task_args_t key_args = malloc(sizeof(*key_args));
-        key_args->event_group = keys_events;
-        key_args->event_bit = TECLA_SET_ALARM;
-        key_args->gpio = board->set_alarm;
-        result = xTaskCreate(KeyTask, "KeySetAlarm", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
-    }
-    if (result == pdPASS) {
-        time_task_args_t time_args = malloc(sizeof(*time_args));
-        time_args->event_group = keys_events;
-        time_args->accept = TECLA_ACCEPT;
-        time_args->cancel = TECLA_CANCEL;
-        time_args->increment = TECLA_INCREMENT;
-        time_args->decrement = TECLA_DECREMENT;
-        time_args->set_time = TECLA_SET_TIME;
-        time_args->set_alarm = TECLA_SET_ALARM;
-        result = xTaskCreate(MEFTask, "MEF", 2 * configMINIMAL_STACK_SIZE, time_args, tskIDLE_PRIORITY + 1, NULL);
+        xTaskCreate(BlinkingBlue, "LedAzul", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     }
 
     vTaskStartScheduler();
+
+    for (;;) {
+    }
 }
 
 /* === End of documentation ==================================================================== */
