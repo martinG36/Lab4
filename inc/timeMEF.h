@@ -28,6 +28,7 @@ SPDX-License-Identifier: MIT
 
 #include "FreeRTOS.h"
 #include "event_groups.h"
+#include "screen.h"
 #include "clock.h"
 #include "Mybsp.h"
 
@@ -49,12 +50,11 @@ typedef struct time_task_args_s {
     uint8_t decrement;
     uint8_t set_time;
     uint8_t set_alarm;
+    board_t board;
+    clock_t clock;
 } * time_task_args_t;
 
 /* === Public variable declarations ================================================================================ */
-
-static const struct board_s * board = NULL;
-static struct clock_s * clock = NULL;
 
 /* === Public function declarations ================================================================================ */
 

@@ -56,7 +56,7 @@ typedef struct board_s {
     digital_output_t led_red;
     digital_output_t led_yellow;
     digital_output_t led_green;
-} const * const board_t;
+} const * board_t;
 
 /* === Public variable declarations ================================================================================ */
 
