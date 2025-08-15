@@ -17,13 +17,13 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 SPDX-License-Identifier: MIT
 *********************************************************************************************************************/
 
-/** @file bsp.c
+/** @file Mybsp.c
  ** @brief Implementación de funciones y macros para el control de pines digitales
  **/
 
 /* === Headers files inclusions ==================================================================================== */
 
-#include "bsp.h"
+#include "Mybsp.h"
 #include "CIAA.h"
 #include "chip.h"
 #include "poncho.h"

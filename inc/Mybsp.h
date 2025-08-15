@@ -17,10 +17,10 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 SPDX-License-Identifier: MIT
 *********************************************************************************************************************/
 
-#ifndef BSP_H_
-#define BSP_H_
+#ifndef MYBSP_H_
+#define MYBSP_H_
 
-/** @file bsp.h
+/** @file Mybsp.h
  ** @brief Declaración de funciones y macros para el control de pines digitales
  **/
 
@@ -56,7 +56,7 @@ typedef struct board_s {
     digital_output_t led_red;
     digital_output_t led_yellow;
     digital_output_t led_green;
-} const * const board_t;
+} const * board_t;
 
 /* === Public variable declarations ================================================================================ */
 
@@ -70,4 +70,4 @@ board_t BoardCreate(void);
 }
 #endif
 
-#endif /* BSP_H_ */
+#endif /* MYBSP_H_ */
