@@ -88,7 +88,7 @@ void MEFTask(void * pointer) {
         events = xEventGroupWaitBits(args->event_group,
                                      args->accept | args->cancel | args->increment | args->decrement | args->set_time |
                                          args->set_alarm,
-                                     pdTRUE, pdFALSE, portMAX_DELAY);
+                                     pdTRUE, pdFALSE, pdMS_TO_TICKS(1));
 
         switch (current_state) {
             /*-------------------Funcionamiento Normal-------------------------------------------*/
@@ -98,20 +98,31 @@ void MEFTask(void * pointer) {
 
             if (valid_time) {
                 DisplayFlashDigits(args->board->screen, 0, 3, 0);
-                DisplayFlashDot(args->board->screen, 0, 1000, false);
-                DisplayFlashDot(args->board->screen, 1, 1000, true);
-                DisplayFlashDot(args->board->screen, 2, 1000, false);
+                DisplayFlashDot(args->board->screen, 0, 100, false);
+                DisplayFlashDot(args->board->screen, 1, 100, true);
+                DisplayFlashDot(args->board->screen, 2, 100, false);
                 if (alarm_is_active) {
                     DisplayFlashDot(args->board->screen, 3, 0, true);
                     ClockSetStateAlarm(args->clock, true);
                     current_state = STATE_CONTROL_ALARM;
                 } else {
-                    DisplayFlashDot(args->board->screen, 3, 1000, false);
+                    DisplayFlashDot(args->board->screen, 3, 100, false);
                     ClockSetStateAlarm(args->clock, false);
                 }
             } else {
-                DisplayFlashDigits(args->board->screen, 0, 3, 1000);
-                DisplayFlashDot(args->board->screen, 1, 1000, true);
+                DisplayFlashDigits(args->board->screen, 0, 3, 100);
+                DisplayFlashDot(args->board->screen, 1, 100, true);
+            }
+
+            if (events & args->set_time) {
+                adjusting_time = true;
+            } else {
+                adjusting_time = false;
+            }
+            if (events & args->set_alarm) {
+                adjusting_alarm = true;
+            } else {
+                adjusting_alarm = false;
             }
 
             if (adjusting_time) {
@@ -142,7 +153,7 @@ void MEFTask(void * pointer) {
         case STATE_ADJUST_TIME_MINUTES:
             if (adjusting_time) {
                 ScreenWriteBCD(args->board->screen, editable_time.bcd, 4);
-                DisplayFlashDigits(args->board->screen, 2, 3, 1000);
+                DisplayFlashDigits(args->board->screen, 2, 3, 100);
 
                 if (!(events & args->increment)) {
                     flanco_increment = true;
@@ -180,7 +191,7 @@ void MEFTask(void * pointer) {
         case STATE_ADJUST_TIME_HOURS:
             if (adjusting_time) {
                 ScreenWriteBCD(args->board->screen, editable_time.bcd, 4);
-                DisplayFlashDigits(args->board->screen, 0, 1, 1000);
+                DisplayFlashDigits(args->board->screen, 0, 1, 100);
 
                 if (!(events & args->increment)) {
                     flanco_increment = true;
@@ -218,15 +229,16 @@ void MEFTask(void * pointer) {
 
             break;
 
-            /*-------------------Seteo de Alarma-----------------------------------------------*/
+            /*-------------------Seteo de
+             * Alarma-----------------------------------------------*/
         case STATE_ADJUST_ALARM_MINUTES:
             if (adjusting_alarm) {
 
-                DisplayFlashDot(args->board->screen, 0, 1000, true);
-                DisplayFlashDot(args->board->screen, 1, 1000, true);
-                DisplayFlashDot(args->board->screen, 2, 1000, true);
-                DisplayFlashDot(args->board->screen, 3, 1000, true);
-                DisplayFlashDigits(args->board->screen, 2, 3, 1000);
+                DisplayFlashDot(args->board->screen, 0, 100, true);
+                DisplayFlashDot(args->board->screen, 1, 100, true);
+                DisplayFlashDot(args->board->screen, 2, 100, true);
+                DisplayFlashDot(args->board->screen, 3, 100, true);
+                DisplayFlashDigits(args->board->screen, 2, 3, 100);
 
                 ScreenWriteBCD(args->board->screen, editable_alarm.bcd, 4);
 
@@ -267,7 +279,7 @@ void MEFTask(void * pointer) {
             if (adjusting_alarm) {
 
                 ScreenWriteBCD(args->board->screen, editable_alarm.bcd, 4);
-                DisplayFlashDigits(args->board->screen, 0, 1, 1000);
+                DisplayFlashDigits(args->board->screen, 0, 1, 100);
 
                 if (!(events & args->increment)) {
                     flanco_increment = true;
@@ -305,7 +317,8 @@ void MEFTask(void * pointer) {
 
             break;
 
-            /*-------------------Contol de Alarma-----------------------------------------------*/
+            /*-------------------Contol de
+             * Alarma-----------------------------------------------*/
         case STATE_CONTROL_ALARM:
             if (ClockAlarmIsRinging(args->clock) && alarm_is_active) {
                 DigitalOutputActivate(args->board->led_R);

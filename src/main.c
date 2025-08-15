@@ -153,16 +153,14 @@ int main(void) {
         time_args->clock = clock;
         result = xTaskCreate(MEFTask, "MEF", 2 * configMINIMAL_STACK_SIZE, time_args, tskIDLE_PRIORITY + 3, NULL);
     }
-
-    // ScreenWriteBCD(board->screen, (uint8_t[]){8, 8, 8, 8, 8, 8}, 6);
-    // DisplayFlashDot(board->screen, 0, 0, true);
-    // DisplayFlashDot(board->screen, 1, 0, true);
-    // DisplayFlashDot(board->screen, 2, 0, true);
-    // DisplayFlashDot(board->screen, 3, 0, true);
-    if (true) {
+    if (result == pdPASS) {
         result = xTaskCreate(RefreshScreenTask, "RefreshScreen", configMINIMAL_STACK_SIZE, board->screen,
                              tskIDLE_PRIORITY + 2, NULL);
     }
+    if (result == pdPASS) {
+        result = xTaskCreate(TickTask, "Ticks", configMINIMAL_STACK_SIZE, clock, tskIDLE_PRIORITY + 4, NULL);
+    }
+
     if (result == pdPASS) {
         xTaskCreate(BlinkingBlue, "LedAzul", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     }

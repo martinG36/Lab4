@@ -30,6 +30,7 @@ SPDX-License-Identifier: MIT
 #include "task.h"
 #include "screen.h"
 #include "digital.h"
+#include "clock.h"
 
 /* === Header for C++ compatibility ================================================================================ */
 
@@ -46,6 +47,8 @@ extern "C" {
 /* === Public function declarations ================================================================================ */
 
 void RefreshScreenTask(void * args);
+
+void TickTask(void * pointer);
 
 /* === End of conditional blocks =================================================================================== */
 

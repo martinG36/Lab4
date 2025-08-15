@@ -51,4 +51,13 @@ void RefreshScreenTask(void * pointer) {
     }
 }
 
+void TickTask(void * pointer) {
+    TickType_t last_value = xTaskGetTickCount();
+
+    while (1) {
+        ClockNewTick(pointer);
+        xTaskDelayUntil(&last_value, pdMS_TO_TICKS(1));
+    }
+}
+
 /* === End of documentation ======================================================================================== */
