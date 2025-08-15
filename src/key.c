@@ -70,7 +70,6 @@ void LargeKeyTask(void * pointer) {
         }
 
         pressKey = xTaskGetTickCount();
-
         xLastWakeTime = pressKey;
 
         while (DigitalInputGetIsActive(args->gpio)) {

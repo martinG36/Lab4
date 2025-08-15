@@ -90,6 +90,8 @@ void MEFTask(void * pointer) {
                                          args->set_alarm,
                                      pdTRUE, pdFALSE, pdMS_TO_TICKS(1));
 
+        ticks = xTaskGetTickCount();
+
         switch (current_state) {
             /*-------------------Funcionamiento Normal-------------------------------------------*/
         case STATE_SHOW_TIME:
@@ -111,7 +113,10 @@ void MEFTask(void * pointer) {
                 }
             } else {
                 DisplayFlashDigits(args->board->screen, 0, 3, 100);
+                DisplayFlashDot(args->board->screen, 0, 100, false);
                 DisplayFlashDot(args->board->screen, 1, 100, true);
+                DisplayFlashDot(args->board->screen, 2, 100, false);
+                DisplayFlashDot(args->board->screen, 3, 100, false);
             }
 
             if (events & args->set_time) {
@@ -127,9 +132,11 @@ void MEFTask(void * pointer) {
 
             if (adjusting_time) {
                 current_state = STATE_ADJUST_TIME_MINUTES;
+                last_activity_ticks_time = ticks;
             }
             if (adjusting_alarm) {
                 current_state = STATE_ADJUST_ALARM_MINUTES;
+                last_activity_ticks_alarm = ticks;
             }
 
             if (!(events & args->accept)) {
@@ -181,6 +188,10 @@ void MEFTask(void * pointer) {
                     last_activity_ticks_time = ticks;
                     flanco_accept = false;
                 }
+
+                if (ticks - last_activity_ticks_time >= pdMS_TO_TICKS(30000)) {
+                    adjusting_time = false;
+                }
             }
             if (!adjusting_time || (events & args->cancel)) {
                 current_state = STATE_SHOW_TIME;
@@ -221,6 +232,10 @@ void MEFTask(void * pointer) {
                     current_state = STATE_SHOW_TIME;
                     adjusting_time = false;
                 }
+
+                if (ticks - last_activity_ticks_time >= pdMS_TO_TICKS(30000)) {
+                    adjusting_time = false;
+                }
             }
             if (!adjusting_time || (events & args->cancel)) {
                 current_state = STATE_SHOW_TIME;
@@ -229,8 +244,7 @@ void MEFTask(void * pointer) {
 
             break;
 
-            /*-------------------Seteo de
-             * Alarma-----------------------------------------------*/
+            /*-------------------Seteo de Alarma-----------------------------------------------*/
         case STATE_ADJUST_ALARM_MINUTES:
             if (adjusting_alarm) {
 
@@ -267,6 +281,10 @@ void MEFTask(void * pointer) {
                     current_state = STATE_ADJUST_ALARM_HOURS;
                     last_activity_ticks_alarm = ticks;
                     flanco_accept = false;
+                }
+
+                if (ticks - last_activity_ticks_alarm >= pdMS_TO_TICKS(30000)) {
+                    adjusting_alarm = false;
                 }
             }
             if (!adjusting_alarm || (events & args->cancel)) {
@@ -309,6 +327,10 @@ void MEFTask(void * pointer) {
                     current_state = STATE_SHOW_TIME;
                     adjusting_alarm = false;
                 }
+
+                if (ticks - last_activity_ticks_alarm >= pdMS_TO_TICKS(30000)) {
+                    adjusting_alarm = false;
+                }
             }
             if (!adjusting_alarm || (events & args->cancel)) {
                 current_state = STATE_SHOW_TIME;
@@ -317,8 +339,7 @@ void MEFTask(void * pointer) {
 
             break;
 
-            /*-------------------Contol de
-             * Alarma-----------------------------------------------*/
+            /*-------------------Contol de Alarma-----------------------------------------------*/
         case STATE_CONTROL_ALARM:
             if (ClockAlarmIsRinging(args->clock) && alarm_is_active) {
                 DigitalOutputActivate(args->board->led_R);

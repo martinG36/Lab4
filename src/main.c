@@ -75,13 +75,6 @@ static struct clock_s * clock = NULL;
 
 /* === Private function implementation ========================================================= */
 
-void BlinkingBlue(void * parameters) {
-    while (true) {
-        DigitalOutputToggle(board->led_B);
-        vTaskDelay(pdMS_TO_TICKS(500));
-    }
-}
-
 /* === Public function implementation ========================================================= */
 
 int main(void) {
@@ -131,14 +124,14 @@ int main(void) {
         key_args->event_group = keys_events;
         key_args->event_bit = TECLA_SET_TIME;
         key_args->gpio = board->set_time;
-        result = xTaskCreate(KeyTask, "KeySetTime", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
+        result = xTaskCreate(LargeKeyTask, "KeySetTime", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
     }
     if (result == pdPASS) {
         key_task_args_t key_args = malloc(sizeof(*key_args));
         key_args->event_group = keys_events;
         key_args->event_bit = TECLA_SET_ALARM;
         key_args->gpio = board->set_alarm;
-        result = xTaskCreate(KeyTask, "KeySetAlarm", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
+        result = xTaskCreate(LargeKeyTask, "KeySetAlarm", KEY_TASK_STACK_SIZE, key_args, tskIDLE_PRIORITY + 1, NULL);
     }
     if (result == pdPASS) {
         time_task_args_t time_args = malloc(sizeof(*time_args));
@@ -159,10 +152,6 @@ int main(void) {
     }
     if (result == pdPASS) {
         result = xTaskCreate(TickTask, "Ticks", configMINIMAL_STACK_SIZE, clock, tskIDLE_PRIORITY + 4, NULL);
-    }
-
-    if (result == pdPASS) {
-        xTaskCreate(BlinkingBlue, "LedAzul", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
     }
 
     vTaskStartScheduler();
